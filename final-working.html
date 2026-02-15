@@ -6,34 +6,40 @@
     <title>Solana Token Creator</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
         :root {
             --primary: #00FFA3;
+            --primary-dark: #00CC82;
             --bg-dark: #0A0E1A;
             --bg-card: #141824;
+            --bg-input: #0d1120;
             --text-primary: #FFFFFF;
             --text-secondary: #A0AEC0;
+            --text-muted: #4A5568;
             --border: #2D3748;
             --success: #00FFA3;
             --error: #FF6B6B;
+            --warning: #F6AD55;
         }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: linear-gradient(135deg, #0A0E1A 0%, #141824 100%);
+            background: var(--bg-dark);
             color: var(--text-primary);
             min-height: 100vh;
-            padding: 2rem;
+            line-height: 1.6;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
-        
+        /* ── HEADER ── */
         .header {
-            background: rgba(20, 24, 36, 0.95);
-            padding: 1.5rem;
-            border-radius: 20px;
-            margin-bottom: 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10,14,26,0.95);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,506 +47,1088 @@
             gap: 1rem;
         }
 
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-
-        .controls {
+        .logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
             display: flex;
-            gap: 1rem;
             align-items: center;
-            flex-wrap: wrap;
+            gap: 0.5rem;
+            cursor: pointer;
         }
 
-        .network-toggle {
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 9px;
             display: flex;
-            background: var(--bg-dark);
-            border-radius: 12px;
-            padding: 0.25rem;
-            border: 1px solid var(--border);
+            align-items: center;
+            justify-content: center;
         }
 
-        .network-btn {
-            padding: 0.5rem 1rem;
+        .nav-links {
+            display: flex;
+            gap: 1.75rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Network Toggle */
+        .net-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .net-btn {
+            padding: 0.4rem 1rem;
             background: transparent;
             border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
             border-radius: 8px;
+            color: var(--text-secondary);
             font-weight: 600;
+            font-size: 0.85rem;
             font-family: 'Outfit', sans-serif;
-            transition: all 0.3s;
-        }
-
-        .network-btn.active {
-            background: var(--primary);
-            color: var(--bg-dark);
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 12px;
-            font-weight: 600;
             cursor: pointer;
-            border: none;
-            font-family: 'Outfit', sans-serif;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: var(--primary);
+        .net-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: var(--bg-dark);
         }
 
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .wallet-btn {
+            padding: 0.6rem 1.4rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(0,255,163,0.25);
         }
 
+        .wallet-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,255,163,0.35); }
+
+        .wallet-btn.connected {
+            background: var(--bg-card);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            box-shadow: none;
+        }
+
+        /* ── LAYOUT ── */
+        .page { max-width: 1280px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.15;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+            .sidebar { order: -1; }
+            .nav-links { display: none; }
+        }
+
+        /* ── CARDS ── */
         .card {
             background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 20px;
             padding: 2rem;
-            border: 1px solid var(--border);
-            margin-bottom: 2rem;
         }
 
-        .form-group { margin-bottom: 1.5rem; }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
 
-        .form-label {
+        .card-sub {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.75rem;
+        }
+
+        /* ── FORMS ── */
+        .field { margin-bottom: 1.25rem; }
+
+        .field label {
             display: block;
-            margin-bottom: 0.5rem;
             font-weight: 600;
-            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
         }
 
-        .form-input, .form-textarea {
+        .field small {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+
+        .req { color: var(--error); }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: var(--bg-dark);
+            padding: 0.8rem 1rem;
+            background: var(--bg-input);
             border: 1px solid var(--border);
             border-radius: 12px;
             color: var(--text-primary);
             font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
         }
 
-        .form-textarea { min-height: 100px; resize: vertical; }
+        input:focus, textarea:focus { border-color: var(--primary); }
 
-        .image-upload {
+        textarea { resize: vertical; min-height: 90px; }
+
+        /* ── UPLOAD ── */
+        .upload-box {
             border: 2px dashed var(--border);
             border-radius: 12px;
             padding: 2rem;
             text-align: center;
             cursor: pointer;
-            background: var(--bg-dark);
+            background: var(--bg-input);
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
         }
 
-        .image-upload:hover { border-color: var(--primary); }
+        .upload-box:hover, .upload-box.drag { border-color: var(--primary); background: rgba(0,255,163,0.03); }
 
-        .preview-img {
-            max-width: 200px;
-            max-height: 200px;
+        .upload-box input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+        .upload-hint { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .preview-wrap { margin-top: 1rem; display: none; }
+        .preview-wrap img { max-width: 160px; max-height: 160px; border-radius: 12px; border: 1px solid var(--border); }
+
+        /* ── ADVANCED ── */
+        .adv-btn {
+            width: 100%;
+            padding: 0.7rem;
+            background: transparent;
+            border: 1px solid var(--border);
             border-radius: 12px;
-            margin: 1rem auto;
-            display: none;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 1rem 0;
+            transition: border-color 0.2s, color 0.2s;
         }
 
-        .preview-img.show { display: block; }
+        .adv-btn:hover { border-color: var(--primary); color: var(--primary); }
 
-        .toggle-container {
+        .adv-wrap {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.45s ease;
+        }
+
+        .adv-wrap.open { max-height: 600px; }
+
+        /* ── TOGGLE ROW ── */
+        .toggle-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1rem;
-            background: var(--bg-dark);
+            padding: 0.9rem 1rem;
+            background: var(--bg-input);
             border-radius: 12px;
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 32px;
-        }
+        .toggle-row-label { font-weight: 600; font-size: 0.9rem; }
+        .toggle-row-desc { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.1rem; }
 
-        .toggle-switch input { display: none; }
+        .switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+        .switch input { display: none; }
 
-        .slider {
+        .track {
             position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 28px;
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: var(--border);
-            border-radius: 32px;
-            transition: 0.3s;
+            transition: background 0.3s;
         }
 
-        .slider:before {
+        .track::before {
+            content: '';
             position: absolute;
-            content: "";
-            height: 24px;
-            width: 24px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
+            width: 20px; height: 20px;
+            background: #fff;
             border-radius: 50%;
-            transition: 0.3s;
+            top: 4px; left: 4px;
+            transition: transform 0.3s;
         }
 
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(28px); }
+        .switch input:checked + .track { background: var(--primary); }
+        .switch input:checked + .track::before { transform: translateX(24px); }
 
-        .status {
+        /* ── CREATE BUTTON ── */
+        .create-btn {
+            width: 100%;
             padding: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(0,255,163,0.3);
+            margin-top: 0.5rem;
+        }
+
+        .create-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,255,163,0.4); }
+        .create-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+        /* ── SUMMARY SIDEBAR ── */
+        .sidebar { position: sticky; top: 90px; }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .summary-row:last-child { border-bottom: none; }
+        .summary-row span:first-child { color: var(--text-secondary); }
+        .summary-row span:last-child { font-weight: 600; }
+        .summary-row.total span:last-child { color: var(--primary); font-size: 1.2rem; }
+
+        /* ── LIQUIDITY SECTION ── */
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-sub {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .info-banner {
+            background: rgba(0,255,163,0.06);
+            border: 1px solid rgba(0,255,163,0.3);
+            border-radius: 12px;
+            padding: 0.9rem 1.1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1.25rem;
+        }
+
+        /* ── STATUS ── */
+        .status-box {
+            padding: 0.9rem 1.1rem;
             border-radius: 12px;
             margin: 1rem 0;
+            font-size: 0.9rem;
             display: none;
+            word-break: break-all;
         }
 
-        .status.show { display: block; }
-        .status.success { background: rgba(0, 255, 163, 0.1); border: 1px solid var(--success); color: var(--success); }
-        .status.error { background: rgba(255, 107, 107, 0.1); border: 1px solid var(--error); color: var(--error); }
+        .status-box.show { display: block; }
+        .status-box.ok { background: rgba(0,255,163,0.08); border: 1px solid var(--success); color: var(--success); }
+        .status-box.err { background: rgba(255,107,107,0.08); border: 1px solid var(--error); color: var(--error); }
+        .status-box.info { background: rgba(246,173,85,0.08); border: 1px solid var(--warning); color: var(--warning); }
 
-        .advanced-options {
+        /* ── STEPS ── */
+        .steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+
+        .step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .step:hover { border-color: var(--primary); transform: translateY(-3px); }
+
+        .step-num {
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--bg-dark);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.1rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .step h4 { font-size: 1rem; margin-bottom: 0.3rem; }
+        .step p { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* ── FAQ ── */
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            overflow: hidden;
+        }
+
+        .faq-q {
+            padding: 1.1rem 1.25rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .faq-q:hover { color: var(--primary); }
+
+        .faq-icon {
+            color: var(--primary);
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+            flex-shrink: 0;
+        }
+
+        .faq-item.open .faq-icon { transform: rotate(45deg); }
+
+        .faq-a {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease;
+            padding: 0 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: max-height 0.3s ease;
         }
 
-        .advanced-options.show { max-height: 500px; }
+        .faq-item.open .faq-a { max-height: 300px; padding: 0 1.25rem 1.25rem; }
+
+        /* ── FOOTER ── */
+        .footer {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .footer-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; cursor: pointer; }
+        .footer-links a:hover { color: var(--primary); }
+        .footer-copy { color: var(--text-muted); font-size: 0.8rem; }
+
+        /* ── UTIL ── */
+        .mt2 { margin-top: 2rem; }
+        .mt4 { margin-top: 4rem; }
+        .copy-tag {
+            display: inline-block;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.25rem 0.6rem;
+            font-size: 0.8rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            font-family: monospace;
+            transition: border-color 0.2s;
+        }
+        .copy-tag:hover { border-color: var(--primary); color: var(--primary); }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="logo">⚡ Solana Token Creator</div>
-            <div class="controls">
-                <div class="network-toggle">
-                    <button class="network-btn active" onclick="switchNetwork('devnet')">Devnet</button>
-                    <button class="network-btn" onclick="switchNetwork('mainnet')">Mainnet</button>
-                </div>
-                <button class="btn btn-primary" onclick="toggleWallet()">Connect Wallet</button>
-            </div>
-        </div>
 
-        <div class="card">
-            <h2>Create Your Token</h2>
-            <div id="status" class="status"></div>
-            
-            <form onsubmit="return handleSubmit(event)">
-                <div class="form-group">
-                    <label class="form-label">Token Name *</label>
-                    <input type="text" class="form-input" id="tokenName" required placeholder="My Token">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Symbol *</label>
-                    <input type="text" class="form-input" id="tokenSymbol" maxlength="8" required placeholder="MTK">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Decimals</label>
-                    <input type="number" class="form-input" id="tokenDecimals" value="6" min="0" max="9">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Supply *</label>
-                    <input type="number" class="form-input" id="tokenSupply" required placeholder="1000000">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea class="form-textarea" id="tokenDesc" placeholder="Describe your token..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Token Image</label>
-                    <div class="image-upload" onclick="document.getElementById('imageInput').click()">
-                        <div>📁 Click to upload or drag and drop</div>
-                        <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImage(event)">
-                    </div>
-                    <img id="preview" class="preview-img">
-                </div>
-
-                <button type="button" onclick="toggleAdvanced()" class="btn" style="width:100%; margin:1rem 0; background:transparent; border:1px solid var(--border); color:var(--text-secondary);">
-                    Show Advanced Options ▼
-                </button>
-
-                <div id="advancedOptions" class="advanced-options">
-                    <div class="toggle-container">
-                        <div>
-                            <div style="font-weight:600;">Revoke Freeze Authority</div>
-                            <div style="font-size:0.9rem; color:var(--text-secondary);">Required for liquidity pools</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="freezeToggle" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="toggle-container">
-                        <div>
-                            <div style="font-weight:600;">Revoke Mint Authority</div>
-                            <div style="font-size:0.9rem; color:var(--text-secondary);">Prevents minting more tokens</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="mintToggle">
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary" id="createBtn" style="width:100%;" disabled>
-                    Connect Wallet to Create Token
-                </button>
-            </form>
-        </div>
+<!-- ░░ HEADER ░░ -->
+<header class="header">
+    <div class="logo" onclick="go('hero')">
+        <div class="logo-icon">⚡</div>
+        Solana Token Creator
     </div>
 
-    <script type="module">
-        import { Connection, Keypair, Transaction, SystemProgram, LAMPORTS_PER_SOL } from 'https://esm.sh/@solana/web3.js@1.95.8';
-        import { TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMintInstruction, getMinimumBalanceForRentExemptMint, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction, createSetAuthorityInstruction, AuthorityType } from 'https://esm.sh/@solana/spl-token@0.4.9';
+    <nav class="nav-links">
+        <a onclick="go('creator')">Token Creator</a>
+        <a onclick="go('liquidity')">Create Liquidity</a>
+        <a onclick="go('how-to')">How to Use</a>
+        <a onclick="go('faq')">FAQ</a>
+    </nav>
 
-        window.solanaImports = {
-            Connection, Keypair, Transaction, SystemProgram, LAMPORTS_PER_SOL,
-            TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMintInstruction, 
-            getMinimumBalanceForRentExemptMint, getAssociatedTokenAddress,
-            createAssociatedTokenAccountInstruction, createMintToInstruction,
-            createSetAuthorityInstruction, AuthorityType
+    <div class="header-right">
+        <div class="net-toggle">
+            <button class="net-btn active" id="devBtn">Devnet</button>
+            <button class="net-btn" id="mainBtn">Mainnet</button>
+        </div>
+        <button class="wallet-btn" id="walletBtn">Connect Wallet</button>
+    </div>
+</header>
+
+<!-- ░░ MAIN ░░ -->
+<main class="page">
+
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <h1>Solana Token Creator</h1>
+        <p>Create Solana SPL tokens in seconds — no code needed. Only pay the Solana network fee.</p>
+    </section>
+
+    <!-- TOKEN CREATOR -->
+    <section id="creator">
+        <div class="grid">
+
+            <!-- FORM -->
+            <div class="card">
+                <div class="card-title">Create Your Token</div>
+                <div class="card-sub">Fill in the details below</div>
+
+                <div id="tokenStatus" class="status-box"></div>
+
+                <div class="field">
+                    <label>Token Name <span class="req">*</span></label>
+                    <input type="text" id="tName" placeholder="e.g. My Awesome Token" required>
+                </div>
+
+                <div class="field">
+                    <label>Symbol <span class="req">*</span></label>
+                    <input type="text" id="tSymbol" placeholder="e.g. MAT" maxlength="8" required>
+                    <small>Max 8 characters</small>
+                </div>
+
+                <div class="field">
+                    <label>Decimals</label>
+                    <input type="number" id="tDecimals" value="6" min="0" max="9">
+                    <small>Recommended: 6</small>
+                </div>
+
+                <div class="field">
+                    <label>Supply <span class="req">*</span></label>
+                    <input type="number" id="tSupply" placeholder="e.g. 1000000" required>
+                </div>
+
+                <div class="field">
+                    <label>Description</label>
+                    <textarea id="tDesc" placeholder="Describe your token…"></textarea>
+                </div>
+
+                <div class="field">
+                    <label>Token Image</label>
+                    <div class="upload-box" id="uploadBox">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-hint">Click to upload or drag & drop</div>
+                        <small style="color:var(--text-muted);margin-top:.3rem;display:block;">PNG recommended · max 5 MB</small>
+                        <input type="file" id="imgInput" accept="image/*">
+                    </div>
+                    <div class="preview-wrap" id="previewWrap">
+                        <img id="previewImg" alt="preview">
+                    </div>
+                </div>
+
+                <!-- Advanced -->
+                <button class="adv-btn" id="advBtn">Show Advanced Options ▼</button>
+
+                <div class="adv-wrap" id="advWrap">
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-row-label">Revoke Freeze Authority</div>
+                            <div class="toggle-row-desc">Required to create liquidity pools</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="freezeCk" checked>
+                            <span class="track"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-row-label">Revoke Mint Authority</div>
+                            <div class="toggle-row-desc">Prevents minting additional tokens</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="mintCk">
+                            <span class="track"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="create-btn" id="createBtn" disabled>Connect Wallet to Create Token</button>
+            </div>
+
+            <!-- SIDEBAR -->
+            <aside class="sidebar">
+                <div class="card">
+                    <div class="card-title" style="margin-bottom:1rem">Summary</div>
+                    <div class="summary-row"><span>Wallet</span><span id="sumWallet">Not connected</span></div>
+                    <div class="summary-row"><span>Network</span><span id="sumNetwork">Devnet</span></div>
+                    <div class="summary-row"><span>Revoke Freeze</span><span id="sumFreeze">Yes</span></div>
+                    <div class="summary-row"><span>Revoke Mint</span><span id="sumMint">No</span></div>
+                    <div class="summary-row total"><span>Network Fee</span><span>~0.01 SOL</span></div>
+                </div>
+            </aside>
+
+        </div>
+    </section>
+
+    <!-- LIQUIDITY -->
+    <section class="mt4" id="liquidity">
+        <div class="section-title">Create Liquidity Pool</div>
+        <div class="section-sub">Pair your token with SOL to enable trading on Raydium</div>
+
+        <div class="card">
+            <div class="info-banner">
+                ℹ️ You must have Revoke Freeze Authority enabled when creating your token before adding liquidity. You will need SOL and your tokens in your wallet.
+            </div>
+
+            <div id="liqStatus" class="status-box"></div>
+
+            <div class="field">
+                <label>Token Mint Address <span class="req">*</span></label>
+                <input type="text" id="lMint" placeholder="Paste your token mint address">
+                <small>The mint address received after creating your token</small>
+            </div>
+
+            <div class="field">
+                <label>Token Amount <span class="req">*</span></label>
+                <input type="number" id="lTokenAmt" placeholder="e.g. 500000">
+                <small>How many tokens to deposit into the pool</small>
+            </div>
+
+            <div class="field">
+                <label>SOL Amount <span class="req">*</span></label>
+                <input type="number" id="lSolAmt" placeholder="e.g. 1.5" step="0.01">
+                <small>How much SOL to pair with the tokens</small>
+            </div>
+
+            <button class="create-btn" id="liqBtn" disabled>Connect Wallet to Add Liquidity</button>
+        </div>
+    </section>
+
+    <!-- HOW TO USE -->
+    <section class="mt4" id="how-to">
+        <div class="section-title">How to Use</div>
+        <div class="section-sub">Create your token in six simple steps</div>
+        <div class="steps">
+            <div class="step"><div class="step-num">1</div><h4>Connect Wallet</h4><p>Click "Connect Wallet" and approve in Phantom or Solflare.</p></div>
+            <div class="step"><div class="step-num">2</div><h4>Choose Network</h4><p>Test on Devnet first, then switch to Mainnet for real tokens.</p></div>
+            <div class="step"><div class="step-num">3</div><h4>Token Details</h4><p>Enter name, symbol, decimals and total supply.</p></div>
+            <div class="step"><div class="step-num">4</div><h4>Upload Image</h4><p>Add a logo so your token looks professional on explorers.</p></div>
+            <div class="step"><div class="step-num">5</div><h4>Advanced Options</h4><p>Optionally revoke Freeze and Mint authorities.</p></div>
+            <div class="step"><div class="step-num">6</div><h4>Create & Add Liquidity</h4><p>Approve transactions in your wallet — tokens land in seconds.</p></div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="mt4" id="faq">
+        <div class="section-title">FAQ</div>
+        <div class="section-sub">Common questions answered</div>
+
+        <div class="faq-item">
+            <div class="faq-q">What is the Solana Token Creator? <span class="faq-icon">+</span></div>
+            <div class="faq-a">A free, no-code tool to create SPL tokens on the Solana blockchain. No service fees — you only pay the tiny Solana network fee (~0.01 SOL).</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Is it safe? <span class="faq-icon">+</span></div>
+            <div class="faq-a">Yes. All transactions go through your own wallet. Your private keys never leave your device. Every transaction requires your explicit approval.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">How much does it cost? <span class="faq-icon">+</span></div>
+            <div class="faq-a">Zero service fees. You only pay the unavoidable Solana network fees, typically around 0.005–0.015 SOL total.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Why revoke Freeze Authority? <span class="faq-icon">+</span></div>
+            <div class="faq-a">Raydium and most DEXes require the freeze authority to be revoked before you can create a liquidity pool for your token.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">Which wallets are supported? <span class="faq-icon">+</span></div>
+            <div class="faq-a">Phantom, Solflare, Backpack, and any other wallet that injects window.solana. Phantom is recommended.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-q">What happens after creation? <span class="faq-icon">+</span></div>
+            <div class="faq-a">The entire token supply is sent to your wallet. You'll get the mint address — use it to add liquidity or share with your community.</div>
+        </div>
+    </section>
+
+</main>
+
+<!-- ░░ FOOTER ░░ -->
+<footer class="footer">
+    <div class="footer-links">
+        <a onclick="go('creator')">Token Creator</a>
+        <a onclick="go('liquidity')">Create Liquidity</a>
+        <a onclick="go('how-to')">How to Use</a>
+        <a onclick="go('faq')">FAQ</a>
+    </div>
+    <div class="footer-copy">© 2024 Solana Token Creator · All transactions are final · Only pay network fees</div>
+</footer>
+
+<!-- ░░ SOLANA WEB3 — pinned versions that actually resolve on unpkg ░░ -->
+<script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
+<script src="https://unpkg.com/@solana/buffer-layout@4.0.1/lib/Layout.js"></script>
+<script src="https://unpkg.com/@solana/spl-token@0.3.8/lib/index.iife.js"></script>
+
+<script>
+/* ===================================================
+   APP STATE
+=================================================== */
+var SOL = null;     // solanaWeb3
+var SPL = null;     // splToken
+var conn = null;
+var walletPub = null;
+var network = 'devnet';
+
+var RPC = {
+    devnet:  'https://api.devnet.solana.com',
+    mainnet: 'https://solana-mainnet.g.alchemy.com/v2/demo'
+};
+
+/* ===================================================
+   LIBRARY BOOT — check every 150ms until loaded
+=================================================== */
+function boot() {
+    SOL = window.solanaWeb3 || null;
+    SPL = window.splToken   || null;
+
+    if (!SOL || !SPL) {
+        setTimeout(boot, 150);
+        return;
+    }
+
+    makeConnection();
+    bindAll();
+}
+
+function makeConnection() {
+    conn = new SOL.Connection(RPC[network], 'confirmed');
+}
+
+/* ===================================================
+   BIND EVERY INTERACTION
+=================================================== */
+function bindAll() {
+    /* Network buttons */
+    document.getElementById('devBtn').onclick = function() { setNetwork('devnet', this); };
+    document.getElementById('mainBtn').onclick = function() { setNetwork('mainnet', this); };
+
+    /* Wallet button */
+    document.getElementById('walletBtn').onclick = handleWallet;
+
+    /* Image upload */
+    var box   = document.getElementById('uploadBox');
+    var input = document.getElementById('imgInput');
+    var wrap  = document.getElementById('previewWrap');
+    var img   = document.getElementById('previewImg');
+
+    box.addEventListener('click', function(e) {
+        if (e.target !== input) input.click();
+    });
+
+    input.addEventListener('change', function() {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            wrap.style.display = 'block';
         };
+        reader.readAsDataURL(file);
+    });
 
-        console.log('Solana libraries loaded via ES modules!');
-    </script>
+    box.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        box.classList.add('drag');
+    });
 
-    <script>
-        let wallet = null;
-        let connected = false;
-        let network = 'devnet';
-        let connection = null;
+    box.addEventListener('dragleave', function() {
+        box.classList.remove('drag');
+    });
 
-        function setupConnection() {
-            const endpoint = network === 'mainnet' 
-                ? 'https://api.mainnet-beta.solana.com'
-                : 'https://api.devnet.solana.com';
-            
-            if (window.solanaImports) {
-                connection = new window.solanaImports.Connection(endpoint, 'confirmed');
-                console.log('Connected to', network);
-            } else {
-                setTimeout(setupConnection, 100);
-            }
+    box.addEventListener('drop', function(e) {
+        e.preventDefault();
+        box.classList.remove('drag');
+        var file = e.dataTransfer.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+            img.src = ev.target.result;
+            wrap.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    /* Advanced options */
+    var advBtn  = document.getElementById('advBtn');
+    var advWrap = document.getElementById('advWrap');
+    advBtn.onclick = function() {
+        var open = advWrap.classList.toggle('open');
+        advBtn.textContent = open ? 'Hide Advanced Options ▲' : 'Show Advanced Options ▼';
+    };
+
+    /* Toggle summary */
+    document.getElementById('freezeCk').onchange = updateSummary;
+    document.getElementById('mintCk').onchange = updateSummary;
+
+    /* Create token */
+    document.getElementById('createBtn').onclick = handleCreate;
+
+    /* Liquidity */
+    document.getElementById('liqBtn').onclick = handleLiquidity;
+
+    /* FAQ */
+    document.querySelectorAll('.faq-q').forEach(function(q) {
+        q.onclick = function() {
+            var item = q.closest('.faq-item');
+            var wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
+            if (!wasOpen) item.classList.add('open');
+        };
+    });
+}
+
+/* ===================================================
+   NETWORK
+=================================================== */
+function setNetwork(net, btn) {
+    if (walletPub) {
+        setStatus('tokenStatus', 'Disconnect your wallet before switching networks.', 'err');
+        return;
+    }
+    network = net;
+    makeConnection();
+    document.querySelectorAll('.net-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('sumNetwork').textContent = net === 'mainnet' ? 'Mainnet' : 'Devnet';
+    setStatus('tokenStatus', 'Switched to ' + net, 'ok');
+}
+
+/* ===================================================
+   WALLET
+=================================================== */
+async function handleWallet() {
+    if (walletPub) {
+        disconnectWallet();
+    } else {
+        await connectWallet();
+    }
+}
+
+async function connectWallet() {
+    var btn = document.getElementById('walletBtn');
+    if (!window.solana || !window.solana.isPhantom) {
+        setStatus('tokenStatus', 'Phantom wallet not found. Install it from phantom.app', 'err');
+        window.open('https://phantom.app/', '_blank');
+        return;
+    }
+    try {
+        btn.textContent = 'Connecting…';
+        var resp = await window.solana.connect();
+        walletPub = resp.publicKey;
+
+        var addr = walletPub.toString();
+        var short = addr.slice(0,4) + '…' + addr.slice(-4);
+
+        btn.textContent = short;
+        btn.classList.add('connected');
+
+        document.getElementById('sumWallet').textContent = short;
+        document.getElementById('createBtn').disabled = false;
+        document.getElementById('createBtn').textContent = 'Create Token';
+        document.getElementById('liqBtn').disabled = false;
+        document.getElementById('liqBtn').textContent = 'Create Liquidity Pool';
+
+        setStatus('tokenStatus', '✅ Wallet connected: ' + short, 'ok');
+
+        // listen for disconnect
+        window.solana.on('disconnect', disconnectWallet);
+        window.solana.on('accountChanged', function(pk) {
+            if (pk) { walletPub = pk; } else { disconnectWallet(); }
+        });
+    } catch(e) {
+        btn.textContent = 'Connect Wallet';
+        setStatus('tokenStatus', 'Connection cancelled or failed: ' + e.message, 'err');
+    }
+}
+
+function disconnectWallet() {
+    if (window.solana && window.solana.disconnect) {
+        try { window.solana.disconnect(); } catch(e) {}
+    }
+    walletPub = null;
+    var btn = document.getElementById('walletBtn');
+    btn.textContent = 'Connect Wallet';
+    btn.classList.remove('connected');
+    document.getElementById('sumWallet').textContent = 'Not connected';
+    document.getElementById('createBtn').disabled = true;
+    document.getElementById('createBtn').textContent = 'Connect Wallet to Create Token';
+    document.getElementById('liqBtn').disabled = true;
+    document.getElementById('liqBtn').textContent = 'Connect Wallet to Add Liquidity';
+    setStatus('tokenStatus', 'Wallet disconnected.', 'info');
+}
+
+/* ===================================================
+   SUMMARY
+=================================================== */
+function updateSummary() {
+    document.getElementById('sumFreeze').textContent = document.getElementById('freezeCk').checked ? 'Yes' : 'No';
+    document.getElementById('sumMint').textContent   = document.getElementById('mintCk').checked   ? 'Yes' : 'No';
+}
+
+/* ===================================================
+   CREATE TOKEN
+=================================================== */
+async function handleCreate() {
+    if (!walletPub) { setStatus('tokenStatus','Connect your wallet first.','err'); return; }
+    if (!conn)      { setStatus('tokenStatus','Connection not ready.','err'); return; }
+
+    var name    = document.getElementById('tName').value.trim();
+    var symbol  = document.getElementById('tSymbol').value.trim();
+    var decimals= parseInt(document.getElementById('tDecimals').value) || 6;
+    var supply  = parseInt(document.getElementById('tSupply').value);
+
+    if (!name || !symbol || isNaN(supply) || supply <= 0) {
+        setStatus('tokenStatus','Please fill in Name, Symbol and Supply.','err');
+        return;
+    }
+
+    var revokeFreeze = document.getElementById('freezeCk').checked;
+    var revokeMint   = document.getElementById('mintCk').checked;
+
+    var btn = document.getElementById('createBtn');
+    btn.disabled = true;
+    btn.textContent = 'Working…';
+
+    try {
+        // ── Step 1: create mint account ──
+        setStatus('tokenStatus', '1/5 · Creating mint account…', 'info');
+
+        var mintKp  = SOL.Keypair.generate();
+        var lamports = await SPL.getMinimumBalanceForRentExemptMint(conn);
+
+        var tx1 = new SOL.Transaction().add(
+            SOL.SystemProgram.createAccount({
+                fromPubkey: walletPub,
+                newAccountPubkey: mintKp.publicKey,
+                space: SPL.MINT_SIZE,
+                lamports: lamports,
+                programId: SPL.TOKEN_PROGRAM_ID
+            }),
+            SPL.createInitializeMintInstruction(
+                mintKp.publicKey,
+                decimals,
+                walletPub,
+                revokeMint ? null : walletPub,
+                SPL.TOKEN_PROGRAM_ID
+            )
+        );
+
+        var bh1 = await conn.getLatestBlockhash();
+        tx1.recentBlockhash = bh1.blockhash;
+        tx1.feePayer = walletPub;
+        tx1.partialSign(mintKp);
+
+        setStatus('tokenStatus', '1/5 · Approve in wallet…', 'info');
+        var sig1 = await window.solana.signAndSendTransaction(tx1);
+        await conn.confirmTransaction(sig1.signature, 'confirmed');
+
+        // ── Step 2: create ATA ──
+        setStatus('tokenStatus', '2/5 · Creating token account…', 'info');
+        var ata = await SPL.getAssociatedTokenAddress(mintKp.publicKey, walletPub, false, SPL.TOKEN_PROGRAM_ID);
+
+        var tx2 = new SOL.Transaction().add(
+            SPL.createAssociatedTokenAccountInstruction(
+                walletPub, ata, walletPub, mintKp.publicKey, SPL.TOKEN_PROGRAM_ID
+            )
+        );
+        var bh2 = await conn.getLatestBlockhash();
+        tx2.recentBlockhash = bh2.blockhash;
+        tx2.feePayer = walletPub;
+        var sig2 = await window.solana.signAndSendTransaction(tx2);
+        await conn.confirmTransaction(sig2.signature, 'confirmed');
+
+        // ── Step 3: mint supply ──
+        setStatus('tokenStatus', '3/5 · Minting tokens…', 'info');
+        var amount = BigInt(supply) * BigInt(Math.pow(10, decimals));
+
+        var tx3 = new SOL.Transaction().add(
+            SPL.createMintToInstruction(
+                mintKp.publicKey, ata, walletPub, amount, [], SPL.TOKEN_PROGRAM_ID
+            )
+        );
+        var bh3 = await conn.getLatestBlockhash();
+        tx3.recentBlockhash = bh3.blockhash;
+        tx3.feePayer = walletPub;
+        var sig3 = await window.solana.signAndSendTransaction(tx3);
+        await conn.confirmTransaction(sig3.signature, 'confirmed');
+
+        // ── Step 4: revoke freeze ──
+        if (revokeFreeze) {
+            setStatus('tokenStatus', '4/5 · Revoking freeze authority…', 'info');
+            var tx4 = new SOL.Transaction().add(
+                SPL.createSetAuthorityInstruction(
+                    mintKp.publicKey, walletPub,
+                    SPL.AuthorityType.FreezeAccount, null, [], SPL.TOKEN_PROGRAM_ID
+                )
+            );
+            var bh4 = await conn.getLatestBlockhash();
+            tx4.recentBlockhash = bh4.blockhash;
+            tx4.feePayer = walletPub;
+            var sig4 = await window.solana.signAndSendTransaction(tx4);
+            await conn.confirmTransaction(sig4.signature, 'confirmed');
         }
 
-        setupConnection();
-
-        window.switchNetwork = function(net) {
-            console.log('Switching to', net);
-            if (connected) {
-                showStatus('Disconnect wallet before switching networks', 'error');
-                return;
-            }
-            
-            document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            network = net;
-            setupConnection();
-            showStatus('Switched to ' + net, 'success');
-        };
-
-        window.toggleWallet = async function() {
-            if (connected) {
-                await disconnectWallet();
-            } else {
-                await connectWallet();
-            }
-        };
-
-        async function connectWallet() {
-            try {
-                console.log('Connecting wallet...');
-                if (!window.solana) {
-                    showStatus('Please install Phantom wallet', 'error');
-                    window.open('https://phantom.app/', '_blank');
-                    return;
-                }
-
-                const resp = await window.solana.connect();
-                wallet = window.solana;
-                connected = true;
-
-                const addr = resp.publicKey.toString();
-                event.target.textContent = addr.slice(0,4) + '...' + addr.slice(-4);
-                
-                document.getElementById('createBtn').disabled = false;
-                document.getElementById('createBtn').textContent = 'Create Token';
-
-                showStatus('Wallet connected!', 'success');
-            } catch (err) {
-                console.error('Connect error:', err);
-                showStatus('Failed to connect: ' + err.message, 'error');
-            }
+        // ── Step 5: revoke mint ──
+        if (revokeMint) {
+            setStatus('tokenStatus', '5/5 · Revoking mint authority…', 'info');
+            var tx5 = new SOL.Transaction().add(
+                SPL.createSetAuthorityInstruction(
+                    mintKp.publicKey, walletPub,
+                    SPL.AuthorityType.MintTokens, null, [], SPL.TOKEN_PROGRAM_ID
+                )
+            );
+            var bh5 = await conn.getLatestBlockhash();
+            tx5.recentBlockhash = bh5.blockhash;
+            tx5.feePayer = walletPub;
+            var sig5 = await window.solana.signAndSendTransaction(tx5);
+            await conn.confirmTransaction(sig5.signature, 'confirmed');
         }
 
-        async function disconnectWallet() {
-            try {
-                if (wallet) await wallet.disconnect();
-                wallet = null;
-                connected = false;
-                
-                event.target.textContent = 'Connect Wallet';
-                document.getElementById('createBtn').disabled = true;
-                document.getElementById('createBtn').textContent = 'Connect Wallet to Create Token';
-                
-                showStatus('Wallet disconnected', 'success');
-            } catch (err) {
-                console.error('Disconnect error:', err);
-            }
-        }
+        var mintAddr = mintKp.publicKey.toString();
+        var explorerBase = network === 'mainnet'
+            ? 'https://solscan.io/token/' + mintAddr
+            : 'https://solscan.io/token/' + mintAddr + '?cluster=devnet';
 
-        window.handleImage = function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('preview').src = e.target.result;
-                    document.getElementById('preview').classList.add('show');
-                };
-                reader.readAsDataURL(file);
-            }
-        };
+        document.getElementById('tokenStatus').innerHTML =
+            '<strong>✅ Token created!</strong><br>' +
+            'Mint: <code>' + mintAddr + '</code>' +
+            '<span class="copy-tag" onclick="copy(\'' + mintAddr + '\')">Copy</span><br>' +
+            '<a href="' + explorerBase + '" target="_blank" style="color:var(--primary);">View on Solscan ↗</a>';
+        document.getElementById('tokenStatus').className = 'status-box show ok';
 
-        window.toggleAdvanced = function() {
-            const options = document.getElementById('advancedOptions');
-            options.classList.toggle('show');
-            event.target.textContent = options.classList.contains('show') 
-                ? 'Hide Advanced Options ▲' 
-                : 'Show Advanced Options ▼';
-        };
+        // auto-fill liquidity form
+        document.getElementById('lMint').value = mintAddr;
 
-        window.handleSubmit = async function(e) {
-            e.preventDefault();
-            
-            if (!connected) {
-                showStatus('Please connect wallet first', 'error');
-                return false;
-            }
+    } catch(e) {
+        console.error(e);
+        setStatus('tokenStatus', '❌ Error: ' + e.message, 'err');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Token';
+    }
+}
 
-            await createToken();
-            return false;
-        };
+/* ===================================================
+   LIQUIDITY
+=================================================== */
+async function handleLiquidity() {
+    if (!walletPub) { setStatus('liqStatus','Connect your wallet first.','err'); return; }
 
-        async function createToken() {
-            const { Connection, Keypair, Transaction, SystemProgram } = window.solanaImports;
-            const { TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMintInstruction, getMinimumBalanceForRentExemptMint, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction, createSetAuthorityInstruction, AuthorityType } = window.solanaImports;
+    var mint   = document.getElementById('lMint').value.trim();
+    var tokAmt = parseFloat(document.getElementById('lTokenAmt').value);
+    var solAmt = parseFloat(document.getElementById('lSolAmt').value);
 
-            try {
-                const btn = document.getElementById('createBtn');
-                btn.disabled = true;
-                btn.textContent = 'Creating...';
+    if (!mint || isNaN(tokAmt) || isNaN(solAmt) || tokAmt <= 0 || solAmt <= 0) {
+        setStatus('liqStatus','Please fill in all liquidity fields.','err');
+        return;
+    }
 
-                const decimals = parseInt(document.getElementById('tokenDecimals').value);
-                const supply = parseInt(document.getElementById('tokenSupply').value);
-                const revokeFreeze = document.getElementById('freezeToggle').checked;
-                const revokeMint = document.getElementById('mintToggle').checked;
+    setStatus('liqStatus',
+        'ℹ️ Liquidity pool creation is handled directly on Raydium. ' +
+        'Your mint address has been ready to use. ' +
+        'Visit raydium.io → Liquidity → Create Pool and paste your mint address: ' + mint,
+        'info'
+    );
+}
 
-                showStatus('Creating mint account...', 'success');
+/* ===================================================
+   HELPERS
+=================================================== */
+function setStatus(id, msg, type) {
+    var el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = 'status-box show ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info');
+}
 
-                const payer = wallet.publicKey;
-                const mintKeypair = Keypair.generate();
-                const lamports = await getMinimumBalanceForRentExemptMint(connection);
+function copy(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        alert('Copied: ' + text);
+    });
+}
 
-                const tx = new Transaction().add(
-                    SystemProgram.createAccount({
-                        fromPubkey: payer,
-                        newAccountPubkey: mintKeypair.publicKey,
-                        space: MINT_SIZE,
-                        lamports,
-                        programId: TOKEN_PROGRAM_ID,
-                    }),
-                    createInitializeMintInstruction(
-                        mintKeypair.publicKey,
-                        decimals,
-                        payer,
-                        revokeMint ? null : payer,
-                        TOKEN_PROGRAM_ID
-                    )
-                );
+function go(id) {
+    var el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
-                const { blockhash } = await connection.getLatestBlockhash();
-                tx.recentBlockhash = blockhash;
-                tx.feePayer = payer;
-                tx.partialSign(mintKeypair);
-
-                showStatus('Approve transaction in wallet...', 'success');
-                const signed = await wallet.signTransaction(tx);
-                const sig = await connection.sendRawTransaction(signed.serialize());
-                await connection.confirmTransaction(sig);
-
-                showStatus('Creating token account...', 'success');
-                const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, payer, false, TOKEN_PROGRAM_ID);
-                const tx2 = new Transaction().add(
-                    createAssociatedTokenAccountInstruction(payer, ata, payer, mintKeypair.publicKey, TOKEN_PROGRAM_ID)
-                );
-                const bh2 = await connection.getLatestBlockhash();
-                tx2.recentBlockhash = bh2.blockhash;
-                tx2.feePayer = payer;
-                const signed2 = await wallet.signTransaction(tx2);
-                await connection.sendRawTransaction(signed2.serialize());
-
-                showStatus('Minting tokens...', 'success');
-                const amount = supply * Math.pow(10, decimals);
-                const tx3 = new Transaction().add(
-                    createMintToInstruction(mintKeypair.publicKey, ata, payer, amount, [], TOKEN_PROGRAM_ID)
-                );
-                const bh3 = await connection.getLatestBlockhash();
-                tx3.recentBlockhash = bh3.blockhash;
-                tx3.feePayer = payer;
-                const signed3 = await wallet.signTransaction(tx3);
-                await connection.sendRawTransaction(signed3.serialize());
-
-                if (revokeFreeze) {
-                    showStatus('Revoking freeze authority...', 'success');
-                    const tx4 = new Transaction().add(
-                        createSetAuthorityInstruction(mintKeypair.publicKey, payer, AuthorityType.FreezeAccount, null, [], TOKEN_PROGRAM_ID)
-                    );
-                    const bh4 = await connection.getLatestBlockhash();
-                    tx4.recentBlockhash = bh4.blockhash;
-                    tx4.feePayer = payer;
-                    const signed4 = await wallet.signTransaction(tx4);
-                    await connection.sendRawTransaction(signed4.serialize());
-                }
-
-                if (revokeMint) {
-                    showStatus('Revoking mint authority...', 'success');
-                    const tx5 = new Transaction().add(
-                        createSetAuthorityInstruction(mintKeypair.publicKey, payer, AuthorityType.MintTokens, null, [], TOKEN_PROGRAM_ID)
-                    );
-                    const bh5 = await connection.getLatestBlockhash();
-                    tx5.recentBlockhash = bh5.blockhash;
-                    tx5.feePayer = payer;
-                    const signed5 = await wallet.signTransaction(tx5);
-                    await connection.sendRawTransaction(signed5.serialize());
-                }
-
-                const mintAddr = mintKeypair.publicKey.toString();
-                showStatus('✅ Token created! Mint: ' + mintAddr, 'success');
-
-                btn.disabled = false;
-                btn.textContent = 'Create Token';
-            } catch (err) {
-                console.error('Create error:', err);
-                showStatus('Failed: ' + err.message, 'error');
-                document.getElementById('createBtn').disabled = false;
-                document.getElementById('createBtn').textContent = 'Create Token';
-            }
-        }
-
-        function showStatus(msg, type) {
-            const status = document.getElementById('status');
-            status.textContent = msg;
-            status.className = 'status show ' + type;
-            setTimeout(() => {
-                if (!msg.includes('Mint:')) status.classList.remove('show');
-            }, 5000);
-        }
-    </script>
+updateSummary();
+boot();
+</script>
 </body>
 </html>
