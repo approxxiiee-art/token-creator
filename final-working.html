@@ -1,1134 +1,675 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solana Token Creator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --primary: #00FFA3;
-            --primary-dark: #00CC82;
-            --bg-dark: #0A0E1A;
-            --bg-card: #141824;
-            --bg-input: #0d1120;
-            --text-primary: #FFFFFF;
-            --text-secondary: #A0AEC0;
-            --text-muted: #4A5568;
-            --border: #2D3748;
-            --success: #00FFA3;
-            --error: #FF6B6B;
-            --warning: #F6AD55;
-        }
-
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            min-height: 100vh;
-            line-height: 1.6;
-        }
-
-        /* ── HEADER ── */
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(10,14,26,0.95);
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 1.75rem;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: color 0.2s;
-            cursor: pointer;
-        }
-
-        .nav-links a:hover { color: var(--primary); }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        /* Network Toggle */
-        .net-toggle {
-            display: flex;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 3px;
-            gap: 2px;
-        }
-
-        .net-btn {
-            padding: 0.4rem 1rem;
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            color: var(--text-secondary);
-            font-weight: 600;
-            font-size: 0.85rem;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .net-btn.active {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--bg-dark);
-        }
-
-        .wallet-btn {
-            padding: 0.6rem 1.4rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            font-family: 'Outfit', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(0,255,163,0.25);
-        }
-
-        .wallet-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,255,163,0.35); }
-
-        .wallet-btn.connected {
-            background: var(--bg-card);
-            color: var(--primary);
-            border: 1px solid var(--primary);
-            box-shadow: none;
-        }
-
-        /* ── LAYOUT ── */
-        .page { max-width: 1280px; margin: 0 auto; padding: 3rem 2rem 6rem; }
-
-        .hero {
-            text-align: center;
-            margin-bottom: 3.5rem;
-        }
-
-        .hero h1 {
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 800;
-            line-height: 1.15;
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 1rem;
-        }
-
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 1.15rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 360px;
-            gap: 1.5rem;
-            align-items: start;
-        }
-
-        @media (max-width: 900px) {
-            .grid { grid-template-columns: 1fr; }
-            .sidebar { order: -1; }
-            .nav-links { display: none; }
-        }
-
-        /* ── CARDS ── */
-        .card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 2rem;
-        }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-        }
-
-        .card-sub {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 1.75rem;
-        }
-
-        /* ── FORMS ── */
-        .field { margin-bottom: 1.25rem; }
-
-        .field label {
-            display: block;
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 0.4rem;
-        }
-
-        .field small {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
-        }
-
-        .req { color: var(--error); }
-
-        input[type="text"],
-        input[type="number"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-family: 'Outfit', sans-serif;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus { border-color: var(--primary); }
-
-        textarea { resize: vertical; min-height: 90px; }
-
-        /* ── UPLOAD ── */
-        .upload-box {
-            border: 2px dashed var(--border);
-            border-radius: 12px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            background: var(--bg-input);
-            transition: border-color 0.2s, background 0.2s;
-            position: relative;
-        }
-
-        .upload-box:hover, .upload-box.drag { border-color: var(--primary); background: rgba(0,255,163,0.03); }
-
-        .upload-box input[type="file"] {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-
-        .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-
-        .upload-hint { color: var(--text-secondary); font-size: 0.9rem; }
-
-        .preview-wrap { margin-top: 1rem; display: none; }
-        .preview-wrap img { max-width: 160px; max-height: 160px; border-radius: 12px; border: 1px solid var(--border); }
-
-        /* ── ADVANCED ── */
-        .adv-btn {
-            width: 100%;
-            padding: 0.7rem;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-secondary);
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-            margin: 1rem 0;
-            transition: border-color 0.2s, color 0.2s;
-        }
-
-        .adv-btn:hover { border-color: var(--primary); color: var(--primary); }
-
-        .adv-wrap {
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.45s ease;
-        }
-
-        .adv-wrap.open { max-height: 600px; }
-
-        /* ── TOGGLE ROW ── */
-        .toggle-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.9rem 1rem;
-            background: var(--bg-input);
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-        }
-
-        .toggle-row-label { font-weight: 600; font-size: 0.9rem; }
-        .toggle-row-desc { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.1rem; }
-
-        .switch { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
-        .switch input { display: none; }
-
-        .track {
-            position: absolute;
-            inset: 0;
-            background: var(--border);
-            border-radius: 28px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .track::before {
-            content: '';
-            position: absolute;
-            width: 20px; height: 20px;
-            background: #fff;
-            border-radius: 50%;
-            top: 4px; left: 4px;
-            transition: transform 0.3s;
-        }
-
-        .switch input:checked + .track { background: var(--primary); }
-        .switch input:checked + .track::before { transform: translateX(24px); }
-
-        /* ── CREATE BUTTON ── */
-        .create-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--bg-dark);
-            border: none;
-            border-radius: 14px;
-            font-family: 'Outfit', sans-serif;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 14px rgba(0,255,163,0.3);
-            margin-top: 0.5rem;
-        }
-
-        .create-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(0,255,163,0.4); }
-        .create-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
-
-        /* ── SUMMARY SIDEBAR ── */
-        .sidebar { position: sticky; top: 90px; }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.7rem 0;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        .summary-row:last-child { border-bottom: none; }
-        .summary-row span:first-child { color: var(--text-secondary); }
-        .summary-row span:last-child { font-weight: 600; }
-        .summary-row.total span:last-child { color: var(--primary); font-size: 1.2rem; }
-
-        /* ── LIQUIDITY SECTION ── */
-        .section-title {
-            font-size: 1.75rem;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 0.5rem;
-        }
-
-        .section-sub {
-            text-align: center;
-            color: var(--text-secondary);
-            margin-bottom: 2.5rem;
-        }
-
-        .info-banner {
-            background: rgba(0,255,163,0.06);
-            border: 1px solid rgba(0,255,163,0.3);
-            border-radius: 12px;
-            padding: 0.9rem 1.1rem;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 1.25rem;
-        }
-
-        /* ── STATUS ── */
-        .status-box {
-            padding: 0.9rem 1.1rem;
-            border-radius: 12px;
-            margin: 1rem 0;
-            font-size: 0.9rem;
-            display: none;
-            word-break: break-all;
-        }
-
-        .status-box.show { display: block; }
-        .status-box.ok { background: rgba(0,255,163,0.08); border: 1px solid var(--success); color: var(--success); }
-        .status-box.err { background: rgba(255,107,107,0.08); border: 1px solid var(--error); color: var(--error); }
-        .status-box.info { background: rgba(246,173,85,0.08); border: 1px solid var(--warning); color: var(--warning); }
-
-        /* ── STEPS ── */
-        .steps { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
-
-        .step {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            transition: border-color 0.2s, transform 0.2s;
-        }
-
-        .step:hover { border-color: var(--primary); transform: translateY(-3px); }
-
-        .step-num {
-            width: 42px; height: 42px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: var(--bg-dark);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.1rem;
-            margin-bottom: 0.85rem;
-        }
-
-        .step h4 { font-size: 1rem; margin-bottom: 0.3rem; }
-        .step p { color: var(--text-secondary); font-size: 0.85rem; }
-
-        /* ── FAQ ── */
-        .faq-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
-            overflow: hidden;
-        }
-
-        .faq-q {
-            padding: 1.1rem 1.25rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            font-size: 0.95rem;
-            user-select: none;
-            transition: color 0.2s;
-        }
-
-        .faq-q:hover { color: var(--primary); }
-
-        .faq-icon {
-            color: var(--primary);
-            font-size: 1.2rem;
-            transition: transform 0.3s;
-            flex-shrink: 0;
-        }
-
-        .faq-item.open .faq-icon { transform: rotate(45deg); }
-
-        .faq-a {
-            max-height: 0;
-            overflow: hidden;
-            padding: 0 1.25rem;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            transition: max-height 0.3s ease;
-        }
-
-        .faq-item.open .faq-a { max-height: 300px; padding: 0 1.25rem 1.25rem; }
-
-        /* ── FOOTER ── */
-        .footer {
-            background: var(--bg-card);
-            border-top: 1px solid var(--border);
-            padding: 2.5rem 2rem;
-            text-align: center;
-        }
-
-        .footer-links { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem; }
-        .footer-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; cursor: pointer; }
-        .footer-links a:hover { color: var(--primary); }
-        .footer-copy { color: var(--text-muted); font-size: 0.8rem; }
-
-        /* ── UTIL ── */
-        .mt2 { margin-top: 2rem; }
-        .mt4 { margin-top: 4rem; }
-        .copy-tag {
-            display: inline-block;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.25rem 0.6rem;
-            font-size: 0.8rem;
-            cursor: pointer;
-            margin-left: 0.5rem;
-            vertical-align: middle;
-            font-family: monospace;
-            transition: border-color 0.2s;
-        }
-        .copy-tag:hover { border-color: var(--primary); color: var(--primary); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solana Token Creator</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--g:#00FFA3;--gd:#00CC82;--bg:#0A0E1A;--card:#141824;--inp:#0d1120;--t1:#fff;--t2:#A0AEC0;--t3:#4A5568;--br:#2D3748;--err:#FF6B6B;--warn:#F6AD55}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;line-height:1.6}
+.hdr{position:sticky;top:0;z-index:99;background:rgba(10,14,26,.97);backdrop-filter:blur(14px);border-bottom:1px solid var(--br);padding:.9rem 2rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.logo{font-size:1.35rem;font-weight:800;color:var(--g);display:flex;align-items:center;gap:.5rem;cursor:pointer;user-select:none}
+.logo-box{width:34px;height:34px;background:linear-gradient(135deg,var(--g),var(--gd));border-radius:8px;display:flex;align-items:center;justify-content:center}
+.nav{display:flex;gap:1.5rem}
+.nav a{color:var(--t2);font-weight:500;font-size:.9rem;cursor:pointer;text-decoration:none;transition:color .2s}
+.nav a:hover{color:var(--g)}
+.hdr-r{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.net-wrap{display:flex;background:var(--card);border:1px solid var(--br);border-radius:10px;padding:3px;gap:2px}
+.net{padding:.38rem .95rem;border:none;background:transparent;color:var(--t2);font-weight:600;font-size:.82rem;font-family:inherit;border-radius:7px;cursor:pointer;transition:all .2s}
+.net.on{background:linear-gradient(135deg,var(--g),var(--gd));color:#0A0E1A}
+.wbtn{padding:.6rem 1.3rem;background:linear-gradient(135deg,var(--g),var(--gd));color:#0A0E1A;border:none;border-radius:10px;font-family:inherit;font-weight:700;font-size:.9rem;cursor:pointer;transition:all .2s;white-space:nowrap}
+.wbtn:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,255,163,.3)}
+.wbtn.connected{background:var(--card);color:var(--g);border:1px solid var(--g)}
+.page{max-width:1200px;margin:0 auto;padding:3rem 1.5rem 6rem}
+.hero{text-align:center;margin-bottom:3.5rem}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;background:linear-gradient(135deg,#fff,var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2;margin-bottom:.9rem}
+.hero p{color:var(--t2);font-size:1.05rem;max-width:560px;margin:0 auto}
+.grid{display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start}
+@media(max-width:860px){.grid{grid-template-columns:1fr}.sidebar{order:-1}.nav{display:none}}
+.card{background:var(--card);border:1px solid var(--br);border-radius:18px;padding:1.75rem;transition:border-color .3s}
+.card-h{font-size:1.2rem;font-weight:700;margin-bottom:.3rem}
+.card-s{color:var(--t2);font-size:.88rem;margin-bottom:1.5rem}
+.fld{margin-bottom:1.1rem}
+.fld label{display:block;font-weight:600;font-size:.88rem;margin-bottom:.38rem}
+.fld small{display:block;color:var(--t3);font-size:.78rem;margin-top:.22rem}
+.req{color:var(--err)}
+input[type=text],input[type=number],textarea{width:100%;padding:.75rem 1rem;background:var(--inp);border:1px solid var(--br);border-radius:11px;color:var(--t1);font-family:inherit;font-size:.93rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--g)}
+textarea{resize:vertical;min-height:85px}
+.upbox{border:2px dashed var(--br);border-radius:11px;padding:1.75rem;text-align:center;background:var(--inp);transition:all .2s;position:relative;cursor:pointer}
+.upbox:hover{border-color:var(--g);background:rgba(0,255,163,.02)}
+.upbox.drag{border-color:var(--g);background:rgba(0,255,163,.04)}
+.upbox input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.up-ico{font-size:2rem;margin-bottom:.4rem;pointer-events:none}
+.up-hint{color:var(--t2);font-size:.88rem;pointer-events:none}
+.prev-wrap{margin-top:.75rem;display:none}
+.prev-wrap img{max-width:140px;max-height:140px;border-radius:10px;border:1px solid var(--br);display:block}
+.adv-btn{width:100%;padding:.65rem;background:transparent;border:1px solid var(--br);border-radius:11px;color:var(--t2);font-family:inherit;font-weight:600;font-size:.88rem;cursor:pointer;margin:1rem 0;transition:all .2s}
+.adv-btn:hover{border-color:var(--g);color:var(--g)}
+.adv-body{display:none}
+.adv-body.open{display:block}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1rem;background:var(--inp);border-radius:11px;margin-bottom:.65rem}
+.trow-info .trow-l{font-weight:600;font-size:.88rem}
+.trow-info .trow-d{color:var(--t3);font-size:.78rem;margin-top:.1rem}
+.sw{position:relative;width:50px;height:26px;flex-shrink:0;cursor:pointer}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.track{position:absolute;inset:0;background:var(--br);border-radius:26px;transition:background .3s;cursor:pointer}
+.track::before{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:4px;left:4px;transition:transform .3s}
+.sw input:checked+.track{background:var(--g)}
+.sw input:checked+.track::before{transform:translateX(24px)}
+.cbtn{width:100%;padding:.95rem;background:linear-gradient(135deg,var(--g),var(--gd));color:#0A0E1A;border:none;border-radius:13px;font-family:inherit;font-size:.97rem;font-weight:700;cursor:pointer;margin-top:.5rem;transition:all .2s}
+.cbtn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,255,163,.35)}
+.cbtn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.sidebar{position:sticky;top:80px}
+.sum-row{display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--br);font-size:.88rem}
+.sum-row:last-child{border:none}
+.sum-row span:first-child{color:var(--t2)}
+.sum-row span:last-child{font-weight:600}
+.sum-row.big span:last-child{color:var(--g);font-size:1.1rem}
+.sts{padding:.85rem 1rem;border-radius:11px;margin:.75rem 0;font-size:.87rem;display:none;line-height:1.55;word-break:break-all}
+.sts.show{display:block}
+.sts.ok{background:rgba(0,255,163,.08);border:1px solid var(--g);color:var(--g)}
+.sts.er{background:rgba(255,107,107,.08);border:1px solid var(--err);color:var(--err)}
+.sts.fo{background:rgba(246,173,85,.08);border:1px solid var(--warn);color:var(--warn)}
+.sec{margin-top:4rem}
+.sec-h{font-size:1.7rem;font-weight:800;text-align:center;margin-bottom:.5rem}
+.sec-s{color:var(--t2);text-align:center;margin-bottom:2rem;font-size:.95rem}
+.info-b{background:rgba(0,255,163,.05);border:1px solid rgba(0,255,163,.25);border-radius:11px;padding:.85rem 1rem;color:var(--t2);font-size:.87rem;margin-bottom:1.25rem;line-height:1.55}
+.steps{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.1rem}
+.step{background:var(--card);border:1px solid var(--br);border-radius:14px;padding:1.35rem;transition:all .2s}
+.step:hover{border-color:var(--g);transform:translateY(-2px)}
+.step-n{width:38px;height:38px;background:linear-gradient(135deg,var(--g),var(--gd));color:#0A0E1A;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;margin-bottom:.75rem}
+.step h4{font-size:.92rem;margin-bottom:.25rem}
+.step p{color:var(--t2);font-size:.8rem}
+.faq-item{background:var(--card);border:1px solid var(--br);border-radius:12px;margin-bottom:.65rem;overflow:hidden}
+.faq-q{padding:1rem 1.2rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:.92rem;user-select:none;transition:color .2s}
+.faq-q:hover{color:var(--g)}
+.faq-ic{color:var(--g);font-size:1.1rem;transition:transform .3s;flex-shrink:0;margin-left:.5rem}
+.faq-item.open .faq-ic{transform:rotate(45deg)}
+.faq-a{max-height:0;overflow:hidden;padding:0 1.2rem;color:var(--t2);font-size:.87rem;transition:max-height .3s ease,padding .3s ease}
+.faq-item.open .faq-a{max-height:200px;padding:0 1.2rem 1.2rem}
+footer{background:var(--card);border-top:1px solid var(--br);padding:2rem;text-align:center;margin-top:5rem}
+.ft-links{display:flex;justify-content:center;gap:1.75rem;flex-wrap:wrap;margin-bottom:.75rem}
+.ft-links a{color:var(--t2);font-size:.88rem;cursor:pointer;text-decoration:none;transition:color .2s}
+.ft-links a:hover{color:var(--g)}
+.ft-c{color:var(--t3);font-size:.78rem}
+.chip{display:inline-block;background:var(--inp);border:1px solid var(--br);border-radius:7px;padding:.15rem .5rem;font-size:.78rem;cursor:pointer;margin-left:.35rem;transition:all .2s;vertical-align:middle}
+.chip:hover{border-color:var(--g);color:var(--g)}
+a.expl{color:var(--g);font-size:.82rem;text-decoration:none;display:inline-block;margin-top:.35rem}
+</style>
 </head>
 <body>
 
-<!-- ░░ HEADER ░░ -->
-<header class="header">
-    <div class="logo" onclick="go('hero')">
-        <div class="logo-icon">⚡</div>
-        Solana Token Creator
+<header class="hdr">
+  <div class="logo" id="logoBtn">
+    <div class="logo-box">⚡</div>
+    Solana Token Creator
+  </div>
+  <nav class="nav">
+    <a id="navCreator">Token Creator</a>
+    <a id="navLiquidity">Create Liquidity</a>
+    <a id="navHowTo">How to Use</a>
+    <a id="navFaq">FAQ</a>
+  </nav>
+  <div class="hdr-r">
+    <div class="net-wrap">
+      <button class="net on" id="devBtn">Devnet</button>
+      <button class="net" id="mainBtn">Mainnet</button>
     </div>
-
-    <nav class="nav-links">
-        <a onclick="go('creator')">Token Creator</a>
-        <a onclick="go('liquidity')">Create Liquidity</a>
-        <a onclick="go('how-to')">How to Use</a>
-        <a onclick="go('faq')">FAQ</a>
-    </nav>
-
-    <div class="header-right">
-        <div class="net-toggle">
-            <button class="net-btn active" id="devBtn">Devnet</button>
-            <button class="net-btn" id="mainBtn">Mainnet</button>
-        </div>
-        <button class="wallet-btn" id="walletBtn">Connect Wallet</button>
-    </div>
+    <button class="wbtn" id="walletBtn">Connect Wallet</button>
+  </div>
 </header>
 
-<!-- ░░ MAIN ░░ -->
 <main class="page">
 
-    <!-- HERO -->
-    <section class="hero" id="hero">
-        <h1>Solana Token Creator</h1>
-        <p>Create Solana SPL tokens in seconds — no code needed. Only pay the Solana network fee.</p>
-    </section>
+  <section class="hero" id="heroSec">
+    <h1>Solana Token Creator</h1>
+    <p>Create Solana SPL tokens in seconds — no code needed. Only pay the tiny Solana network fee.</p>
+  </section>
 
-    <!-- TOKEN CREATOR -->
-    <section id="creator">
-        <div class="grid">
+  <section id="creatorSec">
+    <div class="grid">
+      <div class="card">
+        <div class="card-h">Create Your Token</div>
+        <div class="card-s">Fill in the details below to mint your SPL token</div>
+        <div id="tokenStatus" class="sts"></div>
 
-            <!-- FORM -->
-            <div class="card">
-                <div class="card-title">Create Your Token</div>
-                <div class="card-sub">Fill in the details below</div>
-
-                <div id="tokenStatus" class="status-box"></div>
-
-                <div class="field">
-                    <label>Token Name <span class="req">*</span></label>
-                    <input type="text" id="tName" placeholder="e.g. My Awesome Token" required>
-                </div>
-
-                <div class="field">
-                    <label>Symbol <span class="req">*</span></label>
-                    <input type="text" id="tSymbol" placeholder="e.g. MAT" maxlength="8" required>
-                    <small>Max 8 characters</small>
-                </div>
-
-                <div class="field">
-                    <label>Decimals</label>
-                    <input type="number" id="tDecimals" value="6" min="0" max="9">
-                    <small>Recommended: 6</small>
-                </div>
-
-                <div class="field">
-                    <label>Supply <span class="req">*</span></label>
-                    <input type="number" id="tSupply" placeholder="e.g. 1000000" required>
-                </div>
-
-                <div class="field">
-                    <label>Description</label>
-                    <textarea id="tDesc" placeholder="Describe your token…"></textarea>
-                </div>
-
-                <div class="field">
-                    <label>Token Image</label>
-                    <div class="upload-box" id="uploadBox">
-                        <div class="upload-icon">🖼️</div>
-                        <div class="upload-hint">Click to upload or drag & drop</div>
-                        <small style="color:var(--text-muted);margin-top:.3rem;display:block;">PNG recommended · max 5 MB</small>
-                        <input type="file" id="imgInput" accept="image/*">
-                    </div>
-                    <div class="preview-wrap" id="previewWrap">
-                        <img id="previewImg" alt="preview">
-                    </div>
-                </div>
-
-                <!-- Advanced -->
-                <button class="adv-btn" id="advBtn">Show Advanced Options ▼</button>
-
-                <div class="adv-wrap" id="advWrap">
-                    <div class="toggle-row">
-                        <div>
-                            <div class="toggle-row-label">Revoke Freeze Authority</div>
-                            <div class="toggle-row-desc">Required to create liquidity pools</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="freezeCk" checked>
-                            <span class="track"></span>
-                        </label>
-                    </div>
-                    <div class="toggle-row">
-                        <div>
-                            <div class="toggle-row-label">Revoke Mint Authority</div>
-                            <div class="toggle-row-desc">Prevents minting additional tokens</div>
-                        </div>
-                        <label class="switch">
-                            <input type="checkbox" id="mintCk">
-                            <span class="track"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="create-btn" id="createBtn" disabled>Connect Wallet to Create Token</button>
-            </div>
-
-            <!-- SIDEBAR -->
-            <aside class="sidebar">
-                <div class="card">
-                    <div class="card-title" style="margin-bottom:1rem">Summary</div>
-                    <div class="summary-row"><span>Wallet</span><span id="sumWallet">Not connected</span></div>
-                    <div class="summary-row"><span>Network</span><span id="sumNetwork">Devnet</span></div>
-                    <div class="summary-row"><span>Revoke Freeze</span><span id="sumFreeze">Yes</span></div>
-                    <div class="summary-row"><span>Revoke Mint</span><span id="sumMint">No</span></div>
-                    <div class="summary-row total"><span>Network Fee</span><span>~0.01 SOL</span></div>
-                </div>
-            </aside>
-
+        <div class="fld">
+          <label>Token Name <span class="req">*</span></label>
+          <input type="text" id="tName" placeholder="e.g. My Token">
         </div>
-    </section>
+        <div class="fld">
+          <label>Symbol <span class="req">*</span></label>
+          <input type="text" id="tSymbol" placeholder="e.g. MTK" maxlength="8">
+          <small>Max 8 characters</small>
+        </div>
+        <div class="fld">
+          <label>Decimals</label>
+          <input type="number" id="tDec" value="6" min="0" max="9">
+          <small>Recommended: 6</small>
+        </div>
+        <div class="fld">
+          <label>Supply <span class="req">*</span></label>
+          <input type="number" id="tSup" placeholder="e.g. 1000000">
+        </div>
+        <div class="fld">
+          <label>Description</label>
+          <textarea id="tDesc" placeholder="Describe your token…"></textarea>
+        </div>
+        <div class="fld">
+          <label>Token Image</label>
+          <div class="upbox" id="upBox">
+            <div class="up-ico">🖼️</div>
+            <div class="up-hint">Click to upload or drag &amp; drop</div>
+            <small style="color:var(--t3);margin-top:.25rem;display:block;pointer-events:none">PNG recommended · max 5 MB</small>
+            <input type="file" id="imgFile" accept="image/*">
+          </div>
+          <div class="prev-wrap" id="prevWrap"><img id="prevImg" alt="preview"></div>
+        </div>
 
-    <!-- LIQUIDITY -->
-    <section class="mt4" id="liquidity">
-        <div class="section-title">Create Liquidity Pool</div>
-        <div class="section-sub">Pair your token with SOL to enable trading on Raydium</div>
+        <button class="adv-btn" id="advBtn">Show Advanced Options ▼</button>
+        <div class="adv-body" id="advBody">
+          <div class="trow">
+            <div class="trow-info">
+              <div class="trow-l">Revoke Freeze Authority</div>
+              <div class="trow-d">Required for liquidity pools</div>
+            </div>
+            <label class="sw"><input type="checkbox" id="frCk" checked><span class="track"></span></label>
+          </div>
+          <div class="trow">
+            <div class="trow-info">
+              <div class="trow-l">Revoke Mint Authority</div>
+              <div class="trow-d">Prevents minting more tokens</div>
+            </div>
+            <label class="sw"><input type="checkbox" id="miCk"><span class="track"></span></label>
+          </div>
+        </div>
 
+        <button class="cbtn" id="createBtn" disabled>Connect Wallet to Create Token</button>
+      </div>
+
+      <aside class="sidebar">
         <div class="card">
-            <div class="info-banner">
-                ℹ️ You must have Revoke Freeze Authority enabled when creating your token before adding liquidity. You will need SOL and your tokens in your wallet.
-            </div>
-
-            <div id="liqStatus" class="status-box"></div>
-
-            <div class="field">
-                <label>Token Mint Address <span class="req">*</span></label>
-                <input type="text" id="lMint" placeholder="Paste your token mint address">
-                <small>The mint address received after creating your token</small>
-            </div>
-
-            <div class="field">
-                <label>Token Amount <span class="req">*</span></label>
-                <input type="number" id="lTokenAmt" placeholder="e.g. 500000">
-                <small>How many tokens to deposit into the pool</small>
-            </div>
-
-            <div class="field">
-                <label>SOL Amount <span class="req">*</span></label>
-                <input type="number" id="lSolAmt" placeholder="e.g. 1.5" step="0.01">
-                <small>How much SOL to pair with the tokens</small>
-            </div>
-
-            <button class="create-btn" id="liqBtn" disabled>Connect Wallet to Add Liquidity</button>
+          <div class="card-h" style="margin-bottom:1rem">Summary</div>
+          <div class="sum-row"><span>Wallet</span><span id="sWal">Not connected</span></div>
+          <div class="sum-row"><span>Network</span><span id="sNet">Devnet</span></div>
+          <div class="sum-row"><span>Revoke Freeze</span><span id="sFr">Yes</span></div>
+          <div class="sum-row"><span>Revoke Mint</span><span id="sMi">No</span></div>
+          <div class="sum-row big"><span>Network Fee</span><span>~0.01 SOL</span></div>
         </div>
-    </section>
+      </aside>
+    </div>
+  </section>
 
-    <!-- HOW TO USE -->
-    <section class="mt4" id="how-to">
-        <div class="section-title">How to Use</div>
-        <div class="section-sub">Create your token in six simple steps</div>
-        <div class="steps">
-            <div class="step"><div class="step-num">1</div><h4>Connect Wallet</h4><p>Click "Connect Wallet" and approve in Phantom or Solflare.</p></div>
-            <div class="step"><div class="step-num">2</div><h4>Choose Network</h4><p>Test on Devnet first, then switch to Mainnet for real tokens.</p></div>
-            <div class="step"><div class="step-num">3</div><h4>Token Details</h4><p>Enter name, symbol, decimals and total supply.</p></div>
-            <div class="step"><div class="step-num">4</div><h4>Upload Image</h4><p>Add a logo so your token looks professional on explorers.</p></div>
-            <div class="step"><div class="step-num">5</div><h4>Advanced Options</h4><p>Optionally revoke Freeze and Mint authorities.</p></div>
-            <div class="step"><div class="step-num">6</div><h4>Create & Add Liquidity</h4><p>Approve transactions in your wallet — tokens land in seconds.</p></div>
-        </div>
-    </section>
+  <section class="sec" id="liquiditySec">
+    <div class="sec-h">Create Liquidity Pool</div>
+    <div class="sec-s">Pair your token with SOL to enable trading on Raydium</div>
+    <div class="card">
+      <div class="info-b">ℹ️ You must revoke Freeze Authority when creating your token before adding liquidity. Ensure you have SOL and tokens in your wallet.</div>
+      <div id="liqStatus" class="sts"></div>
+      <div class="fld">
+        <label>Token Mint Address <span class="req">*</span></label>
+        <input type="text" id="lMint" placeholder="Paste your token mint address">
+        <small>Mint address received after creating your token</small>
+      </div>
+      <div class="fld">
+        <label>Token Amount <span class="req">*</span></label>
+        <input type="number" id="lTok" placeholder="e.g. 500000">
+        <small>Tokens to deposit into the pool</small>
+      </div>
+      <div class="fld">
+        <label>SOL Amount <span class="req">*</span></label>
+        <input type="number" id="lSol" placeholder="e.g. 1.5" step="0.01">
+        <small>SOL to pair with your tokens</small>
+      </div>
+      <button class="cbtn" id="liqBtn" disabled>Connect Wallet to Add Liquidity</button>
+    </div>
+  </section>
 
-    <!-- FAQ -->
-    <section class="mt4" id="faq">
-        <div class="section-title">FAQ</div>
-        <div class="section-sub">Common questions answered</div>
+  <section class="sec" id="howToSec">
+    <div class="sec-h">How to Use</div>
+    <div class="sec-s">Create your token in six simple steps</div>
+    <div class="steps">
+      <div class="step"><div class="step-n">1</div><h4>Connect Wallet</h4><p>Click "Connect Wallet" — Phantom popup will appear for approval.</p></div>
+      <div class="step"><div class="step-n">2</div><h4>Choose Network</h4><p>Test for free on Devnet first, then switch to Mainnet for real tokens.</p></div>
+      <div class="step"><div class="step-n">3</div><h4>Token Details</h4><p>Enter name, symbol, decimals and total supply.</p></div>
+      <div class="step"><div class="step-n">4</div><h4>Upload Image</h4><p>Add a logo so your token looks professional on explorers.</p></div>
+      <div class="step"><div class="step-n">5</div><h4>Advanced Options</h4><p>Optionally revoke Freeze and Mint authorities.</p></div>
+      <div class="step"><div class="step-n">6</div><h4>Create &amp; Add Liquidity</h4><p>Approve transactions in your wallet — tokens arrive in seconds.</p></div>
+    </div>
+  </section>
 
-        <div class="faq-item">
-            <div class="faq-q">What is the Solana Token Creator? <span class="faq-icon">+</span></div>
-            <div class="faq-a">A free, no-code tool to create SPL tokens on the Solana blockchain. No service fees — you only pay the tiny Solana network fee (~0.01 SOL).</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Is it safe? <span class="faq-icon">+</span></div>
-            <div class="faq-a">Yes. All transactions go through your own wallet. Your private keys never leave your device. Every transaction requires your explicit approval.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">How much does it cost? <span class="faq-icon">+</span></div>
-            <div class="faq-a">Zero service fees. You only pay the unavoidable Solana network fees, typically around 0.005–0.015 SOL total.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Why revoke Freeze Authority? <span class="faq-icon">+</span></div>
-            <div class="faq-a">Raydium and most DEXes require the freeze authority to be revoked before you can create a liquidity pool for your token.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">Which wallets are supported? <span class="faq-icon">+</span></div>
-            <div class="faq-a">Phantom, Solflare, Backpack, and any other wallet that injects window.solana. Phantom is recommended.</div>
-        </div>
-        <div class="faq-item">
-            <div class="faq-q">What happens after creation? <span class="faq-icon">+</span></div>
-            <div class="faq-a">The entire token supply is sent to your wallet. You'll get the mint address — use it to add liquidity or share with your community.</div>
-        </div>
-    </section>
+  <section class="sec" id="faqSec">
+    <div class="sec-h">FAQ</div>
+    <div class="sec-s">Common questions answered</div>
+    <div class="faq-item"><div class="faq-q">What is this tool? <span class="faq-ic">+</span></div><div class="faq-a">A free no-code SPL token creator on Solana. No service fees — you only pay the tiny network fee (~0.01 SOL).</div></div>
+    <div class="faq-item"><div class="faq-q">Is it safe? <span class="faq-ic">+</span></div><div class="faq-a">Yes. All transactions go through your own wallet. Your private keys never leave your device and every transaction requires your explicit approval.</div></div>
+    <div class="faq-item"><div class="faq-q">How much does it cost? <span class="faq-ic">+</span></div><div class="faq-a">Zero service fees. You only pay the Solana network fees — typically 0.005–0.015 SOL total.</div></div>
+    <div class="faq-item"><div class="faq-q">Why revoke Freeze Authority? <span class="faq-ic">+</span></div><div class="faq-a">Raydium and most DEXes require the freeze authority to be revoked before you can create a liquidity pool for your token.</div></div>
+    <div class="faq-item"><div class="faq-q">Which wallets work? <span class="faq-ic">+</span></div><div class="faq-a">Phantom, Solflare, Backpack and any wallet that injects window.solana. Phantom is recommended.</div></div>
+    <div class="faq-item"><div class="faq-q">What happens after creation? <span class="faq-ic">+</span></div><div class="faq-a">The full supply lands in your wallet. You get the mint address — use it to add liquidity or share with your community.</div></div>
+  </section>
 
 </main>
 
-<!-- ░░ FOOTER ░░ -->
-<footer class="footer">
-    <div class="footer-links">
-        <a onclick="go('creator')">Token Creator</a>
-        <a onclick="go('liquidity')">Create Liquidity</a>
-        <a onclick="go('how-to')">How to Use</a>
-        <a onclick="go('faq')">FAQ</a>
-    </div>
-    <div class="footer-copy">© 2024 Solana Token Creator · All transactions are final · Only pay network fees</div>
+<footer>
+  <div class="ft-links">
+    <a id="ftCreator">Token Creator</a>
+    <a id="ftLiquidity">Create Liquidity</a>
+    <a id="ftHowTo">How to Use</a>
+    <a id="ftFaq">FAQ</a>
+  </div>
+  <div class="ft-c">© 2024 Solana Token Creator · No service fees · Only pay Solana network fees</div>
 </footer>
 
-<!-- ░░ SOLANA WEB3 — pinned versions that actually resolve on unpkg ░░ -->
-<script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js"></script>
-<script src="https://unpkg.com/@solana/buffer-layout@4.0.1/lib/Layout.js"></script>
-<script src="https://unpkg.com/@solana/spl-token@0.3.8/lib/index.iife.js"></script>
-
 <script>
-/* ===================================================
-   APP STATE
-=================================================== */
-var SOL = null;     // solanaWeb3
-var SPL = null;     // splToken
-var conn = null;
-var walletPub = null;
-var network = 'devnet';
+(function() {
+  'use strict';
 
-var RPC = {
+  /* ─── STATE ────────────────────────────────────── */
+  var NET = 'devnet';
+  var WALLET_PUB = null;
+  var SOL = null;
+  var SPL = null;
+  var CONN = null;
+  var advOpen = false;
+  var libsLoading = false;
+  var libsReady = false;
+
+  var RPC = {
     devnet:  'https://api.devnet.solana.com',
     mainnet: 'https://solana-mainnet.g.alchemy.com/v2/demo'
-};
+  };
 
-/* ===================================================
-   LIBRARY BOOT — check every 150ms until loaded
-=================================================== */
-function boot() {
-    SOL = window.solanaWeb3 || null;
-    SPL = window.splToken   || null;
+  /* ─── HELPERS ──────────────────────────────────── */
+  function $(id) { return document.getElementById(id); }
 
-    if (!SOL || !SPL) {
-        setTimeout(boot, 150);
-        return;
+  function showStatus(id, html, type) {
+    var el = $(id);
+    el.innerHTML = html;
+    el.className = 'sts show ' + type;
+  }
+
+  function hideStatus(id) {
+    $(id).className = 'sts';
+  }
+
+  function scrollTo(id) {
+    var el = $(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function shorten(addr) {
+    return addr.slice(0, 4) + '…' + addr.slice(-4);
+  }
+
+  /* ─── NAV ──────────────────────────────────────── */
+  $('logoBtn').onclick     = function() { scrollTo('heroSec'); };
+  $('navCreator').onclick  = function() { scrollTo('creatorSec'); };
+  $('navLiquidity').onclick= function() { scrollTo('liquiditySec'); };
+  $('navHowTo').onclick    = function() { scrollTo('howToSec'); };
+  $('navFaq').onclick      = function() { scrollTo('faqSec'); };
+  $('ftCreator').onclick   = function() { scrollTo('creatorSec'); };
+  $('ftLiquidity').onclick = function() { scrollTo('liquiditySec'); };
+  $('ftHowTo').onclick     = function() { scrollTo('howToSec'); };
+  $('ftFaq').onclick       = function() { scrollTo('faqSec'); };
+
+  /* ─── NETWORK TOGGLE ───────────────────────────── */
+  $('devBtn').onclick = function() {
+    if (WALLET_PUB) {
+      showStatus('tokenStatus', 'Disconnect your wallet before switching networks.', 'er');
+      return;
     }
+    NET = 'devnet';
+    $('devBtn').classList.add('on');
+    $('mainBtn').classList.remove('on');
+    $('sNet').textContent = 'Devnet';
+    if (SOL) CONN = new SOL.Connection(RPC.devnet, 'confirmed');
+    showStatus('tokenStatus', '✓ Switched to Devnet', 'fo');
+  };
 
-    makeConnection();
-    bindAll();
-}
-
-function makeConnection() {
-    conn = new SOL.Connection(RPC[network], 'confirmed');
-}
-
-/* ===================================================
-   BIND EVERY INTERACTION
-=================================================== */
-function bindAll() {
-    /* Network buttons */
-    document.getElementById('devBtn').onclick = function() { setNetwork('devnet', this); };
-    document.getElementById('mainBtn').onclick = function() { setNetwork('mainnet', this); };
-
-    /* Wallet button */
-    document.getElementById('walletBtn').onclick = handleWallet;
-
-    /* Image upload */
-    var box   = document.getElementById('uploadBox');
-    var input = document.getElementById('imgInput');
-    var wrap  = document.getElementById('previewWrap');
-    var img   = document.getElementById('previewImg');
-
-    box.addEventListener('click', function(e) {
-        if (e.target !== input) input.click();
-    });
-
-    input.addEventListener('change', function() {
-        var file = this.files[0];
-        if (!file) return;
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            img.src = e.target.result;
-            wrap.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    });
-
-    box.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        box.classList.add('drag');
-    });
-
-    box.addEventListener('dragleave', function() {
-        box.classList.remove('drag');
-    });
-
-    box.addEventListener('drop', function(e) {
-        e.preventDefault();
-        box.classList.remove('drag');
-        var file = e.dataTransfer.files[0];
-        if (!file || !file.type.startsWith('image/')) return;
-        var reader = new FileReader();
-        reader.onload = function(ev) {
-            img.src = ev.target.result;
-            wrap.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    });
-
-    /* Advanced options */
-    var advBtn  = document.getElementById('advBtn');
-    var advWrap = document.getElementById('advWrap');
-    advBtn.onclick = function() {
-        var open = advWrap.classList.toggle('open');
-        advBtn.textContent = open ? 'Hide Advanced Options ▲' : 'Show Advanced Options ▼';
-    };
-
-    /* Toggle summary */
-    document.getElementById('freezeCk').onchange = updateSummary;
-    document.getElementById('mintCk').onchange = updateSummary;
-
-    /* Create token */
-    document.getElementById('createBtn').onclick = handleCreate;
-
-    /* Liquidity */
-    document.getElementById('liqBtn').onclick = handleLiquidity;
-
-    /* FAQ */
-    document.querySelectorAll('.faq-q').forEach(function(q) {
-        q.onclick = function() {
-            var item = q.closest('.faq-item');
-            var wasOpen = item.classList.contains('open');
-            document.querySelectorAll('.faq-item.open').forEach(function(i) { i.classList.remove('open'); });
-            if (!wasOpen) item.classList.add('open');
-        };
-    });
-}
-
-/* ===================================================
-   NETWORK
-=================================================== */
-function setNetwork(net, btn) {
-    if (walletPub) {
-        setStatus('tokenStatus', 'Disconnect your wallet before switching networks.', 'err');
-        return;
+  $('mainBtn').onclick = function() {
+    if (WALLET_PUB) {
+      showStatus('tokenStatus', 'Disconnect your wallet before switching networks.', 'er');
+      return;
     }
-    network = net;
-    makeConnection();
-    document.querySelectorAll('.net-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    document.getElementById('sumNetwork').textContent = net === 'mainnet' ? 'Mainnet' : 'Devnet';
-    setStatus('tokenStatus', 'Switched to ' + net, 'ok');
-}
+    NET = 'mainnet';
+    $('mainBtn').classList.add('on');
+    $('devBtn').classList.remove('on');
+    $('sNet').textContent = 'Mainnet';
+    if (SOL) CONN = new SOL.Connection(RPC.mainnet, 'confirmed');
+    showStatus('tokenStatus', '✓ Switched to Mainnet — using Alchemy RPC', 'fo');
+  };
 
-/* ===================================================
-   WALLET
-=================================================== */
-async function handleWallet() {
-    if (walletPub) {
-        disconnectWallet();
-    } else {
-        await connectWallet();
-    }
-}
+  /* ─── WALLET ───────────────────────────────────── */
+  $('walletBtn').onclick = function() {
+    if (WALLET_PUB) { doDisconnect(); } else { doConnect(); }
+  };
 
-async function connectWallet() {
-    var btn = document.getElementById('walletBtn');
-    if (!window.solana || !window.solana.isPhantom) {
-        setStatus('tokenStatus', 'Phantom wallet not found. Install it from phantom.app', 'err');
-        window.open('https://phantom.app/', '_blank');
-        return;
+  async function doConnect() {
+    var btn = $('walletBtn');
+    if (!window.solana) {
+      showStatus('tokenStatus',
+        'Phantom wallet not detected. <a href="https://phantom.app" target="_blank" style="color:var(--g)">Install Phantom</a> then refresh.',
+        'er');
+      return;
     }
     try {
-        btn.textContent = 'Connecting…';
-        var resp = await window.solana.connect();
-        walletPub = resp.publicKey;
+      btn.textContent = 'Connecting…';
+      btn.disabled = true;
+      var resp = await window.solana.connect();
+      WALLET_PUB = resp.publicKey.toString();
+      var short = shorten(WALLET_PUB);
 
-        var addr = walletPub.toString();
-        var short = addr.slice(0,4) + '…' + addr.slice(-4);
+      btn.textContent = short;
+      btn.classList.add('connected');
+      btn.disabled = false;
 
-        btn.textContent = short;
-        btn.classList.add('connected');
+      $('sWal').textContent = short;
+      $('createBtn').disabled = false;
+      $('createBtn').textContent = 'Create Token';
+      $('liqBtn').disabled = false;
+      $('liqBtn').textContent = 'Create Liquidity Pool';
 
-        document.getElementById('sumWallet').textContent = short;
-        document.getElementById('createBtn').disabled = false;
-        document.getElementById('createBtn').textContent = 'Create Token';
-        document.getElementById('liqBtn').disabled = false;
-        document.getElementById('liqBtn').textContent = 'Create Liquidity Pool';
+      showStatus('tokenStatus', '✅ Wallet connected: ' + short, 'ok');
 
-        setStatus('tokenStatus', '✅ Wallet connected: ' + short, 'ok');
+      // If SOL libs already loaded, make connection
+      if (SOL) {
+        CONN = new SOL.Connection(RPC[NET], 'confirmed');
+      }
 
-        // listen for disconnect
-        window.solana.on('disconnect', disconnectWallet);
-        window.solana.on('accountChanged', function(pk) {
-            if (pk) { walletPub = pk; } else { disconnectWallet(); }
-        });
-    } catch(e) {
-        btn.textContent = 'Connect Wallet';
-        setStatus('tokenStatus', 'Connection cancelled or failed: ' + e.message, 'err');
+      window.solana.on('disconnect', doDisconnect);
+
+    } catch (e) {
+      btn.textContent = 'Connect Wallet';
+      btn.disabled = false;
+      showStatus('tokenStatus', 'Connection cancelled or failed: ' + (e.message || e), 'er');
     }
-}
+  }
 
-function disconnectWallet() {
+  function doDisconnect() {
     if (window.solana && window.solana.disconnect) {
-        try { window.solana.disconnect(); } catch(e) {}
+      try { window.solana.disconnect(); } catch(e) {}
     }
-    walletPub = null;
-    var btn = document.getElementById('walletBtn');
+    WALLET_PUB = null;
+    var btn = $('walletBtn');
     btn.textContent = 'Connect Wallet';
     btn.classList.remove('connected');
-    document.getElementById('sumWallet').textContent = 'Not connected';
-    document.getElementById('createBtn').disabled = true;
-    document.getElementById('createBtn').textContent = 'Connect Wallet to Create Token';
-    document.getElementById('liqBtn').disabled = true;
-    document.getElementById('liqBtn').textContent = 'Connect Wallet to Add Liquidity';
-    setStatus('tokenStatus', 'Wallet disconnected.', 'info');
-}
+    btn.disabled = false;
+    $('sWal').textContent = 'Not connected';
+    $('createBtn').disabled = true;
+    $('createBtn').textContent = 'Connect Wallet to Create Token';
+    $('liqBtn').disabled = true;
+    $('liqBtn').textContent = 'Connect Wallet to Add Liquidity';
+    hideStatus('tokenStatus');
+  }
 
-/* ===================================================
-   SUMMARY
-=================================================== */
-function updateSummary() {
-    document.getElementById('sumFreeze').textContent = document.getElementById('freezeCk').checked ? 'Yes' : 'No';
-    document.getElementById('sumMint').textContent   = document.getElementById('mintCk').checked   ? 'Yes' : 'No';
-}
+  /* ─── IMAGE UPLOAD ─────────────────────────────── */
+  var upBox = $('upBox');
+  var imgFile = $('imgFile');
 
-/* ===================================================
-   CREATE TOKEN
-=================================================== */
-async function handleCreate() {
-    if (!walletPub) { setStatus('tokenStatus','Connect your wallet first.','err'); return; }
-    if (!conn)      { setStatus('tokenStatus','Connection not ready.','err'); return; }
+  upBox.addEventListener('click', function(e) {
+    if (e.target !== imgFile) imgFile.click();
+  });
 
-    var name    = document.getElementById('tName').value.trim();
-    var symbol  = document.getElementById('tSymbol').value.trim();
-    var decimals= parseInt(document.getElementById('tDecimals').value) || 6;
-    var supply  = parseInt(document.getElementById('tSupply').value);
+  imgFile.addEventListener('change', function() {
+    readFile(this.files[0]);
+  });
 
-    if (!name || !symbol || isNaN(supply) || supply <= 0) {
-        setStatus('tokenStatus','Please fill in Name, Symbol and Supply.','err');
-        return;
+  upBox.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    upBox.classList.add('drag');
+  });
+  upBox.addEventListener('dragleave', function() {
+    upBox.classList.remove('drag');
+  });
+  upBox.addEventListener('drop', function(e) {
+    e.preventDefault();
+    upBox.classList.remove('drag');
+    var f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) readFile(f);
+  });
+
+  function readFile(f) {
+    if (!f) return;
+    var r = new FileReader();
+    r.onload = function(ev) {
+      $('prevImg').src = ev.target.result;
+      $('prevWrap').style.display = 'block';
+    };
+    r.readAsDataURL(f);
+  }
+
+  /* ─── ADVANCED OPTIONS ─────────────────────────── */
+  $('advBtn').onclick = function() {
+    advOpen = !advOpen;
+    $('advBody').className = 'adv-body' + (advOpen ? ' open' : '');
+    this.textContent = advOpen ? 'Hide Advanced Options ▲' : 'Show Advanced Options ▼';
+  };
+
+  $('frCk').onchange = function() { $('sFr').textContent = this.checked ? 'Yes' : 'No'; };
+  $('miCk').onchange = function() { $('sMi').textContent = this.checked ? 'Yes' : 'No'; };
+
+  /* ─── FAQ ──────────────────────────────────────── */
+  document.querySelectorAll('.faq-q').forEach(function(q) {
+    q.addEventListener('click', function() {
+      var item = q.closest('.faq-item');
+      var isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(function(x) { x.classList.remove('open'); });
+      if (!isOpen) item.classList.add('open');
+    });
+  });
+
+  /* ─── LOAD SOLANA LIBS ─────────────────────────── */
+  function loadLibs(callback) {
+    if (libsReady) { callback(); return; }
+    if (libsLoading) {
+      // Poll until ready
+      var poll = setInterval(function() {
+        if (libsReady) { clearInterval(poll); callback(); }
+      }, 100);
+      return;
     }
+    libsLoading = true;
 
-    var revokeFreeze = document.getElementById('freezeCk').checked;
-    var revokeMint   = document.getElementById('mintCk').checked;
+    var web3Script = document.createElement('script');
+    web3Script.src = 'https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.min.js';
+    web3Script.crossOrigin = 'anonymous';
 
-    var btn = document.getElementById('createBtn');
+    web3Script.onload = function() {
+      SOL = window.solanaWeb3;
+      if (!SOL) { callback(new Error('web3.js loaded but window.solanaWeb3 is undefined')); return; }
+
+      var splScript = document.createElement('script');
+      splScript.src = 'https://unpkg.com/@solana/spl-token@0.3.8/lib/index.iife.js';
+      splScript.crossOrigin = 'anonymous';
+
+      splScript.onload = function() {
+        SPL = window.splToken;
+        if (!SPL) { callback(new Error('spl-token loaded but window.splToken is undefined')); return; }
+        CONN = new SOL.Connection(RPC[NET], 'confirmed');
+        libsReady = true;
+        libsLoading = false;
+        callback(null);
+      };
+
+      splScript.onerror = function() {
+        callback(new Error('Failed to load spl-token from unpkg. Check your internet connection.'));
+      };
+
+      document.body.appendChild(splScript);
+    };
+
+    web3Script.onerror = function() {
+      callback(new Error('Failed to load @solana/web3.js from unpkg. Check your internet connection.'));
+    };
+
+    document.body.appendChild(web3Script);
+  }
+
+  /* ─── CREATE TOKEN ─────────────────────────────── */
+  $('createBtn').onclick = function() {
+    var name = $('tName').value.trim();
+    var sym  = $('tSymbol').value.trim();
+    var dec  = parseInt($('tDec').value) || 6;
+    var sup  = parseInt($('tSup').value);
+
+    if (!name || !sym) { showStatus('tokenStatus', 'Please enter Token Name and Symbol.', 'er'); return; }
+    if (!sup || sup <= 0) { showStatus('tokenStatus', 'Please enter a valid Supply.', 'er'); return; }
+    if (!WALLET_PUB) { showStatus('tokenStatus', 'Please connect your wallet first.', 'er'); return; }
+
+    showStatus('tokenStatus', '⏳ Loading Solana libraries…', 'fo');
+
+    loadLibs(function(err) {
+      if (err) { showStatus('tokenStatus', '❌ ' + err.message, 'er'); return; }
+      doCreateToken(name, sym, dec, sup);
+    });
+  };
+
+  async function doCreateToken(name, sym, dec, sup) {
+    var rfr = $('frCk').checked;
+    var rmi = $('miCk').checked;
+    var btn = $('createBtn');
     btn.disabled = true;
-    btn.textContent = 'Working…';
+    btn.textContent = 'Creating…';
 
     try {
-        // ── Step 1: create mint account ──
-        setStatus('tokenStatus', '1/5 · Creating mint account…', 'info');
+      var payer = new SOL.PublicKey(WALLET_PUB);
+      var mintKp = SOL.Keypair.generate();
 
-        var mintKp  = SOL.Keypair.generate();
-        var lamports = await SPL.getMinimumBalanceForRentExemptMint(conn);
+      // Step 1: create mint account
+      showStatus('tokenStatus', '⏳ Step 1/5 — Creating mint account…', 'fo');
+      var lam = await SPL.getMinimumBalanceForRentExemptMint(CONN);
+      var tx1 = new SOL.Transaction().add(
+        SOL.SystemProgram.createAccount({
+          fromPubkey: payer,
+          newAccountPubkey: mintKp.publicKey,
+          space: SPL.MINT_SIZE,
+          lamports: lam,
+          programId: SPL.TOKEN_PROGRAM_ID
+        }),
+        SPL.createInitializeMintInstruction(
+          mintKp.publicKey, dec, payer,
+          rmi ? null : payer,
+          SPL.TOKEN_PROGRAM_ID
+        )
+      );
+      var bh1 = await CONN.getLatestBlockhash();
+      tx1.recentBlockhash = bh1.blockhash;
+      tx1.feePayer = payer;
+      tx1.partialSign(mintKp);
+      showStatus('tokenStatus', '⏳ Step 1/5 — Approve in Phantom…', 'fo');
+      var s1 = await window.solana.signAndSendTransaction(tx1);
+      await CONN.confirmTransaction(s1.signature, 'confirmed');
 
-        var tx1 = new SOL.Transaction().add(
-            SOL.SystemProgram.createAccount({
-                fromPubkey: walletPub,
-                newAccountPubkey: mintKp.publicKey,
-                space: SPL.MINT_SIZE,
-                lamports: lamports,
-                programId: SPL.TOKEN_PROGRAM_ID
-            }),
-            SPL.createInitializeMintInstruction(
-                mintKp.publicKey,
-                decimals,
-                walletPub,
-                revokeMint ? null : walletPub,
-                SPL.TOKEN_PROGRAM_ID
-            )
+      // Step 2: create ATA
+      showStatus('tokenStatus', '⏳ Step 2/5 — Creating token account…', 'fo');
+      var ata = await SPL.getAssociatedTokenAddress(mintKp.publicKey, payer, false, SPL.TOKEN_PROGRAM_ID);
+      var tx2 = new SOL.Transaction().add(
+        SPL.createAssociatedTokenAccountInstruction(payer, ata, payer, mintKp.publicKey, SPL.TOKEN_PROGRAM_ID)
+      );
+      var bh2 = await CONN.getLatestBlockhash();
+      tx2.recentBlockhash = bh2.blockhash;
+      tx2.feePayer = payer;
+      var s2 = await window.solana.signAndSendTransaction(tx2);
+      await CONN.confirmTransaction(s2.signature, 'confirmed');
+
+      // Step 3: mint supply
+      showStatus('tokenStatus', '⏳ Step 3/5 — Minting tokens to your wallet…', 'fo');
+      var amount = BigInt(sup) * BigInt(Math.pow(10, dec));
+      var tx3 = new SOL.Transaction().add(
+        SPL.createMintToInstruction(mintKp.publicKey, ata, payer, amount, [], SPL.TOKEN_PROGRAM_ID)
+      );
+      var bh3 = await CONN.getLatestBlockhash();
+      tx3.recentBlockhash = bh3.blockhash;
+      tx3.feePayer = payer;
+      var s3 = await window.solana.signAndSendTransaction(tx3);
+      await CONN.confirmTransaction(s3.signature, 'confirmed');
+
+      // Step 4: revoke freeze
+      if (rfr) {
+        showStatus('tokenStatus', '⏳ Step 4/5 — Revoking freeze authority…', 'fo');
+        var tx4 = new SOL.Transaction().add(
+          SPL.createSetAuthorityInstruction(
+            mintKp.publicKey, payer, SPL.AuthorityType.FreezeAccount, null, [], SPL.TOKEN_PROGRAM_ID
+          )
         );
+        var bh4 = await CONN.getLatestBlockhash();
+        tx4.recentBlockhash = bh4.blockhash;
+        tx4.feePayer = payer;
+        var s4 = await window.solana.signAndSendTransaction(tx4);
+        await CONN.confirmTransaction(s4.signature, 'confirmed');
+      }
 
-        var bh1 = await conn.getLatestBlockhash();
-        tx1.recentBlockhash = bh1.blockhash;
-        tx1.feePayer = walletPub;
-        tx1.partialSign(mintKp);
-
-        setStatus('tokenStatus', '1/5 · Approve in wallet…', 'info');
-        var sig1 = await window.solana.signAndSendTransaction(tx1);
-        await conn.confirmTransaction(sig1.signature, 'confirmed');
-
-        // ── Step 2: create ATA ──
-        setStatus('tokenStatus', '2/5 · Creating token account…', 'info');
-        var ata = await SPL.getAssociatedTokenAddress(mintKp.publicKey, walletPub, false, SPL.TOKEN_PROGRAM_ID);
-
-        var tx2 = new SOL.Transaction().add(
-            SPL.createAssociatedTokenAccountInstruction(
-                walletPub, ata, walletPub, mintKp.publicKey, SPL.TOKEN_PROGRAM_ID
-            )
+      // Step 5: revoke mint
+      if (rmi) {
+        showStatus('tokenStatus', '⏳ Step 5/5 — Revoking mint authority…', 'fo');
+        var tx5 = new SOL.Transaction().add(
+          SPL.createSetAuthorityInstruction(
+            mintKp.publicKey, payer, SPL.AuthorityType.MintTokens, null, [], SPL.TOKEN_PROGRAM_ID
+          )
         );
-        var bh2 = await conn.getLatestBlockhash();
-        tx2.recentBlockhash = bh2.blockhash;
-        tx2.feePayer = walletPub;
-        var sig2 = await window.solana.signAndSendTransaction(tx2);
-        await conn.confirmTransaction(sig2.signature, 'confirmed');
+        var bh5 = await CONN.getLatestBlockhash();
+        tx5.recentBlockhash = bh5.blockhash;
+        tx5.feePayer = payer;
+        var s5 = await window.solana.signAndSendTransaction(tx5);
+        await CONN.confirmTransaction(s5.signature, 'confirmed');
+      }
 
-        // ── Step 3: mint supply ──
-        setStatus('tokenStatus', '3/5 · Minting tokens…', 'info');
-        var amount = BigInt(supply) * BigInt(Math.pow(10, decimals));
+      var mintAddr = mintKp.publicKey.toString();
+      var explorerUrl = NET === 'mainnet'
+        ? 'https://solscan.io/token/' + mintAddr
+        : 'https://solscan.io/token/' + mintAddr + '?cluster=devnet';
 
-        var tx3 = new SOL.Transaction().add(
-            SPL.createMintToInstruction(
-                mintKp.publicKey, ata, walletPub, amount, [], SPL.TOKEN_PROGRAM_ID
-            )
-        );
-        var bh3 = await conn.getLatestBlockhash();
-        tx3.recentBlockhash = bh3.blockhash;
-        tx3.feePayer = walletPub;
-        var sig3 = await window.solana.signAndSendTransaction(tx3);
-        await conn.confirmTransaction(sig3.signature, 'confirmed');
+      $('lMint').value = mintAddr;
 
-        // ── Step 4: revoke freeze ──
-        if (revokeFreeze) {
-            setStatus('tokenStatus', '4/5 · Revoking freeze authority…', 'info');
-            var tx4 = new SOL.Transaction().add(
-                SPL.createSetAuthorityInstruction(
-                    mintKp.publicKey, walletPub,
-                    SPL.AuthorityType.FreezeAccount, null, [], SPL.TOKEN_PROGRAM_ID
-                )
-            );
-            var bh4 = await conn.getLatestBlockhash();
-            tx4.recentBlockhash = bh4.blockhash;
-            tx4.feePayer = walletPub;
-            var sig4 = await window.solana.signAndSendTransaction(tx4);
-            await conn.confirmTransaction(sig4.signature, 'confirmed');
-        }
-
-        // ── Step 5: revoke mint ──
-        if (revokeMint) {
-            setStatus('tokenStatus', '5/5 · Revoking mint authority…', 'info');
-            var tx5 = new SOL.Transaction().add(
-                SPL.createSetAuthorityInstruction(
-                    mintKp.publicKey, walletPub,
-                    SPL.AuthorityType.MintTokens, null, [], SPL.TOKEN_PROGRAM_ID
-                )
-            );
-            var bh5 = await conn.getLatestBlockhash();
-            tx5.recentBlockhash = bh5.blockhash;
-            tx5.feePayer = walletPub;
-            var sig5 = await window.solana.signAndSendTransaction(tx5);
-            await conn.confirmTransaction(sig5.signature, 'confirmed');
-        }
-
-        var mintAddr = mintKp.publicKey.toString();
-        var explorerBase = network === 'mainnet'
-            ? 'https://solscan.io/token/' + mintAddr
-            : 'https://solscan.io/token/' + mintAddr + '?cluster=devnet';
-
-        document.getElementById('tokenStatus').innerHTML =
-            '<strong>✅ Token created!</strong><br>' +
-            'Mint: <code>' + mintAddr + '</code>' +
-            '<span class="copy-tag" onclick="copy(\'' + mintAddr + '\')">Copy</span><br>' +
-            '<a href="' + explorerBase + '" target="_blank" style="color:var(--primary);">View on Solscan ↗</a>';
-        document.getElementById('tokenStatus').className = 'status-box show ok';
-
-        // auto-fill liquidity form
-        document.getElementById('lMint').value = mintAddr;
+      showStatus('tokenStatus',
+        '✅ Token created successfully!<br>' +
+        'Mint address: <code style="font-size:.8rem">' + mintAddr + '</code>' +
+        '<span class="chip" onclick="copyText(\'' + mintAddr + '\')">Copy</span><br>' +
+        '<a class="expl" href="' + explorerUrl + '" target="_blank">View on Solscan ↗</a>',
+        'ok'
+      );
 
     } catch(e) {
-        console.error(e);
-        setStatus('tokenStatus', '❌ Error: ' + e.message, 'err');
+      console.error(e);
+      showStatus('tokenStatus', '❌ ' + (e.message || String(e)), 'er');
     } finally {
-        btn.disabled = false;
-        btn.textContent = 'Create Token';
+      btn.disabled = false;
+      btn.textContent = 'Create Token';
     }
-}
+  }
 
-/* ===================================================
-   LIQUIDITY
-=================================================== */
-async function handleLiquidity() {
-    if (!walletPub) { setStatus('liqStatus','Connect your wallet first.','err'); return; }
+  /* ─── LIQUIDITY ────────────────────────────────── */
+  $('liqBtn').onclick = function() {
+    var mint = $('lMint').value.trim();
+    var tok  = parseFloat($('lTok').value);
+    var sol  = parseFloat($('lSol').value);
 
-    var mint   = document.getElementById('lMint').value.trim();
-    var tokAmt = parseFloat(document.getElementById('lTokenAmt').value);
-    var solAmt = parseFloat(document.getElementById('lSolAmt').value);
+    if (!WALLET_PUB) { showStatus('liqStatus', 'Please connect your wallet first.', 'er'); return; }
+    if (!mint)       { showStatus('liqStatus', 'Please enter a token mint address.', 'er'); return; }
+    if (!tok || tok <= 0 || !sol || sol <= 0) { showStatus('liqStatus', 'Please enter valid token and SOL amounts.', 'er'); return; }
 
-    if (!mint || isNaN(tokAmt) || isNaN(solAmt) || tokAmt <= 0 || solAmt <= 0) {
-        setStatus('liqStatus','Please fill in all liquidity fields.','err');
-        return;
-    }
-
-    setStatus('liqStatus',
-        'ℹ️ Liquidity pool creation is handled directly on Raydium. ' +
-        'Your mint address has been ready to use. ' +
-        'Visit raydium.io → Liquidity → Create Pool and paste your mint address: ' + mint,
-        'info'
+    showStatus('liqStatus',
+      'ℹ️ Raydium pool creation requires their SDK and cannot run in a plain HTML file.<br>' +
+      'Go to <a href="https://raydium.io/liquidity/create-pool/" target="_blank" style="color:var(--g)">raydium.io → Create Pool</a> ' +
+      'and paste your mint address:<br>' +
+      '<code style="font-size:.8rem">' + mint + '</code>' +
+      '<span class="chip" onclick="copyText(\'' + mint + '\')">Copy</span>',
+      'fo'
     );
-}
+  };
 
-/* ===================================================
-   HELPERS
-=================================================== */
-function setStatus(id, msg, type) {
-    var el = document.getElementById(id);
-    el.textContent = msg;
-    el.className = 'status-box show ' + (type === 'ok' ? 'ok' : type === 'err' ? 'err' : 'info');
-}
+  /* ─── COPY ─────────────────────────────────────── */
+  window.copyText = function(txt) {
+    navigator.clipboard.writeText(txt)
+      .then(function() { alert('Copied!'); })
+      .catch(function() { prompt('Copy this:', txt); });
+  };
 
-function copy(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        alert('Copied: ' + text);
-    });
-}
-
-function go(id) {
-    var el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-updateSummary();
-boot();
+})(); // end IIFE
 </script>
 </body>
 </html>
