@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solana Token Creator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #00FFA3;
+            --bg-dark: #0A0E1A;
+            --bg-card: #141824;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0AEC0;
+            --border: #2D3748;
+            --success: #00FFA3;
+            --error: #FF6B6B;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0A0E1A 0%, #141824 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header {
+            background: rgba(20, 24, 36, 0.95);
+            padding: 1.5rem;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .network-toggle {
+            display: flex;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 0.25rem;
+            border: 1px solid var(--border);
+        }
+
+        .network-btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 8px;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .network-btn.active {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg-dark);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .form-group { margin-bottom: 1.5rem; }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+        }
+
+        .form-textarea { min-height: 100px; resize: vertical; }
+
+        .image-upload {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            background: var(--bg-dark);
+        }
+
+        .image-upload:hover { border-color: var(--primary); }
+
+        .preview-img {
+            max-width: 200px;
+            max-height: 200px;
+            border-radius: 12px;
+            margin: 1rem auto;
+            display: none;
+        }
+
+        .preview-img.show { display: block; }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 32px;
+        }
+
+        .toggle-switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border);
+            border-radius: 32px;
+            transition: 0.3s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(28px); }
+
+        .status {
+            padding: 1rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .status.show { display: block; }
+        .status.success { background: rgba(0, 255, 163, 0.1); border: 1px solid var(--success); color: var(--success); }
+        .status.error { background: rgba(255, 107, 107, 0.1); border: 1px solid var(--error); color: var(--error); }
+
+        .advanced-options {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .advanced-options.show { max-height: 500px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⚡ Solana Token Creator</div>
+            <div class="controls">
+                <div class="network-toggle">
+                    <button class="network-btn active" onclick="switchNetwork('devnet')">Devnet</button>
+                    <button class="network-btn" onclick="switchNetwork('mainnet')">Mainnet</button>
+                </div>
+                <button class="btn btn-primary" onclick="toggleWallet()">Connect Wallet</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Create Your Token</h2>
+            <div id="status" class="status"></div>
+            
+            <form onsubmit="return handleSubmit(event)">
+                <div class="form-group">
+                    <label class="form-label">Token Name *</label>
+                    <input type="text" class="form-input" id="tokenName" required placeholder="My Token">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Symbol *</label>
+                    <input type="text" class="form-input" id="tokenSymbol" maxlength="8" required placeholder="MTK">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Decimals</label>
+                    <input type="number" class="form-input" id="tokenDecimals" value="6" min="0" max="9">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Supply *</label>
+                    <input type="number" class="form-input" id="tokenSupply" required placeholder="1000000">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="tokenDesc" placeholder="Describe your token..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Token Image</label>
+                    <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                        <div>📁 Click to upload or drag and drop</div>
+                        <input type="file" id="imageInput" accept="image/*" style="display:none;" onchange="handleImage(event)">
+                    </div>
+                    <img id="preview" class="preview-img">
+                </div>
+
+                <button type="button" onclick="toggleAdvanced()" class="btn" style="width:100%; margin:1rem 0; background:transparent; border:1px solid var(--border); color:var(--text-secondary);">
+                    Show Advanced Options ▼
+                </button>
+
+                <div id="advancedOptions" class="advanced-options">
+                    <div class="toggle-container">
+                        <div>
+                            <div style="font-weight:600;">Revoke Freeze Authority</div>
+                            <div style="font-size:0.9rem; color:var(--text-secondary);">Required for liquidity pools</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="freezeToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="toggle-container">
+                        <div>
+                            <div style="font-weight:600;">Revoke Mint Authority</div>
+                            <div style="font-size:0.9rem; color:var(--text-secondary);">Prevents minting more tokens</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="mintToggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="createBtn" style="width:100%;" disabled>
+                    Connect Wallet to Create Token
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { Connection, Keypair, Transaction, SystemProgram, LAMPORTS_PER_SOL } from 'https://esm.sh/@solana/web3.js@1.95.8';
+        import { TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMintInstruction, getMinimumBalanceForRentExemptMint, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction, createSetAuthorityInstruction, AuthorityType } from 'https://esm.sh/@solana/spl-token@0.4.9';
+
+        window.solanaImports = {
+            Connection, Keypair, Transaction, SystemProgram, LAMPORTS_PER_SOL,
+            TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMintInstruction, 
+            getMinimumBalanceForRentExemptMint, getAssociatedTokenAddress,
+            createAssociatedTokenAccountInstruction, createMintToInstruction,
+            createSetAuthorityInstruction, AuthorityType
+        };
+
+        console.log('Solana libraries loaded via ES modules!');
+    </script>
+
+    <script>
+        let wallet = null;
+        let connected = false;
+        let network = 'devnet';
+        let connection = null;
+
+        function setupConnection() {
+            const endpoint = network === 'mainnet' 
+                ? 'https://api.mainnet-beta.solana.com'
+                : 'https://api.devnet.solana.com';
+            
+            if (window.solanaImports) {
+                connection = new window.solanaImports.Connection(endpoint, 'confirmed');
+                console.log('Connected to', network);
+            } else {
+                setTimeout(setupConnection, 100);
+            }
+        }
+
+        setupConnection();
+
+        window.switchNetwork = function(net) {
+            console.log('Switching to', net);
+            if (connected) {
+                showStatus('Disconnect wallet before switching networks', 'error');
+                return;
+            }
+            
+            document.querySelectorAll('.network-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            network = net;
+            setupConnection();
+            showStatus('Switched to ' + net, 'success');
+        };
+
+        window.toggleWallet = async function() {
+            if (connected) {
+                await disconnectWallet();
+            } else {
+                await connectWallet();
+            }
+        };
+
+        async function connectWallet() {
+            try {
+                console.log('Connecting wallet...');
+                if (!window.solana) {
+                    showStatus('Please install Phantom wallet', 'error');
+                    window.open('https://phantom.app/', '_blank');
+                    return;
+                }
+
+                const resp = await window.solana.connect();
+                wallet = window.solana;
+                connected = true;
+
+                const addr = resp.publicKey.toString();
+                event.target.textContent = addr.slice(0,4) + '...' + addr.slice(-4);
+                
+                document.getElementById('createBtn').disabled = false;
+                document.getElementById('createBtn').textContent = 'Create Token';
+
+                showStatus('Wallet connected!', 'success');
+            } catch (err) {
+                console.error('Connect error:', err);
+                showStatus('Failed to connect: ' + err.message, 'error');
+            }
+        }
+
+        async function disconnectWallet() {
+            try {
+                if (wallet) await wallet.disconnect();
+                wallet = null;
+                connected = false;
+                
+                event.target.textContent = 'Connect Wallet';
+                document.getElementById('createBtn').disabled = true;
+                document.getElementById('createBtn').textContent = 'Connect Wallet to Create Token';
+                
+                showStatus('Wallet disconnected', 'success');
+            } catch (err) {
+                console.error('Disconnect error:', err);
+            }
+        }
+
+        window.handleImage = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('preview').src = e.target.result;
+                    document.getElementById('preview').classList.add('show');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.toggleAdvanced = function() {
+            const options = document.getElementById('advancedOptions');
+            options.classList.toggle('show');
+            event.target.textContent = options.classList.contains('show') 
+                ? 'Hide Advanced Options ▲' 
+                : 'Show Advanced Options ▼';
+        };
+
+        window.handleSubmit = async function(e) {
+            e.preventDefault();
+            
+            if (!connected) {
+                showStatus('Please connect wallet first', 'error');
+                return false;
+            }
+
+            await createToken();
+            return false;
+        };
+
+        async function createToken() {
+            const { Connection, Keypair, Transaction, SystemProgram } = window.solanaImports;
+            const { TOKEN_PROGRAM_ID, MINT_SIZE, createInitializeMintInstruction, getMinimumBalanceForRentExemptMint, getAssociatedTokenAddress, createAssociatedTokenAccountInstruction, createMintToInstruction, createSetAuthorityInstruction, AuthorityType } = window.solanaImports;
+
+            try {
+                const btn = document.getElementById('createBtn');
+                btn.disabled = true;
+                btn.textContent = 'Creating...';
+
+                const decimals = parseInt(document.getElementById('tokenDecimals').value);
+                const supply = parseInt(document.getElementById('tokenSupply').value);
+                const revokeFreeze = document.getElementById('freezeToggle').checked;
+                const revokeMint = document.getElementById('mintToggle').checked;
+
+                showStatus('Creating mint account...', 'success');
+
+                const payer = wallet.publicKey;
+                const mintKeypair = Keypair.generate();
+                const lamports = await getMinimumBalanceForRentExemptMint(connection);
+
+                const tx = new Transaction().add(
+                    SystemProgram.createAccount({
+                        fromPubkey: payer,
+                        newAccountPubkey: mintKeypair.publicKey,
+                        space: MINT_SIZE,
+                        lamports,
+                        programId: TOKEN_PROGRAM_ID,
+                    }),
+                    createInitializeMintInstruction(
+                        mintKeypair.publicKey,
+                        decimals,
+                        payer,
+                        revokeMint ? null : payer,
+                        TOKEN_PROGRAM_ID
+                    )
+                );
+
+                const { blockhash } = await connection.getLatestBlockhash();
+                tx.recentBlockhash = blockhash;
+                tx.feePayer = payer;
+                tx.partialSign(mintKeypair);
+
+                showStatus('Approve transaction in wallet...', 'success');
+                const signed = await wallet.signTransaction(tx);
+                const sig = await connection.sendRawTransaction(signed.serialize());
+                await connection.confirmTransaction(sig);
+
+                showStatus('Creating token account...', 'success');
+                const ata = await getAssociatedTokenAddress(mintKeypair.publicKey, payer, false, TOKEN_PROGRAM_ID);
+                const tx2 = new Transaction().add(
+                    createAssociatedTokenAccountInstruction(payer, ata, payer, mintKeypair.publicKey, TOKEN_PROGRAM_ID)
+                );
+                const bh2 = await connection.getLatestBlockhash();
+                tx2.recentBlockhash = bh2.blockhash;
+                tx2.feePayer = payer;
+                const signed2 = await wallet.signTransaction(tx2);
+                await connection.sendRawTransaction(signed2.serialize());
+
+                showStatus('Minting tokens...', 'success');
+                const amount = supply * Math.pow(10, decimals);
+                const tx3 = new Transaction().add(
+                    createMintToInstruction(mintKeypair.publicKey, ata, payer, amount, [], TOKEN_PROGRAM_ID)
+                );
+                const bh3 = await connection.getLatestBlockhash();
+                tx3.recentBlockhash = bh3.blockhash;
+                tx3.feePayer = payer;
+                const signed3 = await wallet.signTransaction(tx3);
+                await connection.sendRawTransaction(signed3.serialize());
+
+                if (revokeFreeze) {
+                    showStatus('Revoking freeze authority...', 'success');
+                    const tx4 = new Transaction().add(
+                        createSetAuthorityInstruction(mintKeypair.publicKey, payer, AuthorityType.FreezeAccount, null, [], TOKEN_PROGRAM_ID)
+                    );
+                    const bh4 = await connection.getLatestBlockhash();
+                    tx4.recentBlockhash = bh4.blockhash;
+                    tx4.feePayer = payer;
+                    const signed4 = await wallet.signTransaction(tx4);
+                    await connection.sendRawTransaction(signed4.serialize());
+                }
+
+                if (revokeMint) {
+                    showStatus('Revoking mint authority...', 'success');
+                    const tx5 = new Transaction().add(
+                        createSetAuthorityInstruction(mintKeypair.publicKey, payer, AuthorityType.MintTokens, null, [], TOKEN_PROGRAM_ID)
+                    );
+                    const bh5 = await connection.getLatestBlockhash();
+                    tx5.recentBlockhash = bh5.blockhash;
+                    tx5.feePayer = payer;
+                    const signed5 = await wallet.signTransaction(tx5);
+                    await connection.sendRawTransaction(signed5.serialize());
+                }
+
+                const mintAddr = mintKeypair.publicKey.toString();
+                showStatus('✅ Token created! Mint: ' + mintAddr, 'success');
+
+                btn.disabled = false;
+                btn.textContent = 'Create Token';
+            } catch (err) {
+                console.error('Create error:', err);
+                showStatus('Failed: ' + err.message, 'error');
+                document.getElementById('createBtn').disabled = false;
+                document.getElementById('createBtn').textContent = 'Create Token';
+            }
+        }
+
+        function showStatus(msg, type) {
+            const status = document.getElementById('status');
+            status.textContent = msg;
+            status.className = 'status show ' + type;
+            setTimeout(() => {
+                if (!msg.includes('Mint:')) status.classList.remove('show');
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
